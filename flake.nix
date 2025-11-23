@@ -21,7 +21,6 @@
         flakeModules.default = {
           config,
           lib,
-          pkgs,
           ...
         }: let
           flakeConfig = config;
@@ -180,20 +179,23 @@
               };
 
               ccusage = pkgs.writeShellScriptBin "ccusage" ''
-                ${pkgs.bun}/bin/bunx ccusage
+                export PATH=${pkgs.lib.makeBinPath corePackages}:$PATH
+
+                ${pkgs.bun}/bin/bunx ccusage@latest
               '';
 
-              mergedPackages = with pkgs;
+              corePackages = with pkgs;
                 [
                   bun
                   jq
-                  ccusage
                   claude-code
                 ]
                 ++ lib.optionals (flakeConfig.pai.otherTools.enableCodex) [codex]
                 ++ lib.optionals (flakeConfig.pai.otherTools.enableFabric) [fabric-ai]
                 ++ lib.optionals (flakeConfig.pai.otherTools.enableGemini) [gemini-cli]
                 ++ flakeConfig.pai.extraPackages;
+
+              mergedPackages = with pkgs; corePackages ++ [ccusage];
 
               binariesToWrap = ["fabric" "gemini" "codex" "claude"];
               mkWrapSecret = binary: let
