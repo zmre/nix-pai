@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "Ref": {
+      "type": "http",
+      "url": "https://api.ref.tools/mcp",
+      "headers": {
+        "x-ref-api-key": "${REF_TOOLS_KEY}"
+      }
+    },
+    "hubspot": {
+      "type": "http",
+      "url": "https://mcp.hubspot.com/anthropic"
+    },
+    "playwright": {
+      "command": "bunx",
+      "args": ["@playwright/mcp@latest", "--extension"],
+      "description": "Browser automation and testing using Playwright for visual debugging and web interaction"
+    }
+  }
+}

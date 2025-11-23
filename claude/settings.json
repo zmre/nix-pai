@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
+  },
+  "companyAnnouncements": ["@companyAnnouncements@"],
+  "outputStyle": "@outputStyle@",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "defaultMode": "@defaultMode@",
+    "allow": [
+      @permissionsAllow@
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(bun:*)",
+      "Bash(cargo:*)",
+      "Bash(rustc:*)",
+      "Bash(curl:*)",
+      "Bash(fabric:*)",
+      "Bash(gemini:*)",
+      "Bash(codex:*)",
+      "Bash(make:*)",
+      "Bash(configure:*)",
+      "Bash(build:*)",
+      "Bash(jq:*)",
+      "Bash(tsc:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(pip:*)",
+      "Bash(uv:*)",
+      "Webfetch(*)",
+      "Read(./**)",
+      "Write(./*)",
+      "Edit(./*)",
+      "MultiEdit(./*)",
+      "Glob(./*)",
+      "Grep(./*)",
+      "LS(./*)",
+      "WebFetch(domain:*)",
+      "WebSearch",
+      "NotebookRead(*)",
+      "NotebookEdit(./*)",
+      "TodoWrite(*)",
+      "ExitPlanMode(*)",
+      "Task(*)"
+    ],
+    "deny": [
+      @permissionsDeny@
+      "Bash(sudo:*)",
+      "Bash(diskutil:*)",
+      "Bash(diskutil partitionDisk)",
+      "Bash(diskutil eraseDisk)",
+      "Bash(diskutil eraseVolume)",
+      "Bash(diskutil reformat)",
+      "Bash(diskutil zeroDisk)",
+      "Bash(diskutil appleRAID)",
+      "Bash(diskutil randomDisk)",
+      "Bash(diskutil coreStorage)",
+      "Bash(diskutil cs)",
+      "Bash(diskutil disableJournal)",
+      "Bash(diskutil resetFusion)",
+      "Bash(diskutil disableOwnership)",
+      "Bash(diskutil apfs deleteContainer)",
+      "Bash(diskutil apfs eraseVolume)",
+      "Bash(diskutil apfs decryptVolume)",
+      "Bash(diskutil apfs changePassphrase)",
+      "Bash(diskutil apfs deleteVolume)",
+      "Bash(diskutil apfs deleteVolumeGroup)",
+      "Bash(diskutil apfs deleteSnapshot)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf $HOME)",
+      "Bash(rm -rf $PAI_HOME)",
+      "Bash(rm -rf $PAI_DIR)",
+      "Bash(sudo rm -rf /)",
+      "Bash(sudo rm -rf /*)",
+      "Bash(fork bomb)",
+      "Bash(dd :*)",
+      "Bash(dd if=/dev/zero of=/dev/sda)",
+      "Bash(mkfs.ext4:*)",
+      "Bash( /dev/sda)",
+      "Bash(> /dev/sda)",
+      "mcp__Ref"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [],
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "@paiBasePath@/claude/hooks/update-tab-titles.ts"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "@paiBasePath@/claude/hooks/load-core-context.ts"
+          },
+          {
+            "type": "command",
+            "command": "@paiBasePath@/claude/hooks/initialize-pai-session.ts"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "@paiBasePath@/claude/hooks/stop-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "@paiBasePath@/claude/hooks/capture-all-events.ts --event-type Stop"
+          }
+        ]
+      }
+    ]
+  },
+
+  "statusLine": {
+    "type": "command",
+    "command": "bash @paiBasePath@/claude/statusline-command.sh"
+  },
+  "alwaysThinkingEnabled": true,
+  "max_tokens": 4096
+}
