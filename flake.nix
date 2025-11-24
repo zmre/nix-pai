@@ -248,6 +248,7 @@
                   )
                   (secrets binary))} \
                   --prefix PATH : "$out/bin" \
+                  --set CODEX_OSS_BASE_URL "${flakeConfig.pai.ollamaServer}/v1" \
                   --set OLLAMA_HOST "${flakeConfig.pai.ollamaServer}"
               '';
 
