@@ -11,6 +11,7 @@
     "defaultMode": "@defaultMode@",
     "allow": [
       @permissionsAllow@
+      "Skill(:*)",
       "Bash(npm:*)",
       "Bash(git:*)",
       "Bash(gh:*)",
