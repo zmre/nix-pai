@@ -1,0 +1,40 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Theme configuration
+  "theme": "opencode",
+  "instructions": ["@paiBasePath@/claude/skills/CORE/SKILL.md"],
+  "model": "ollama/gpt-oss:20b",
+  "autoupdate": false,
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama",
+      "options": {
+        "baseURL": "@ollamaHost@"
+      },
+      "models": {
+        "gpt-oss:20b": {
+          "name": "GPT OSS 20b"
+        },
+        "qwen3:30b": {
+          "name": "Qwen3 30b"
+        },
+        "qwen3-coder:30b": {
+          "name": "Qwen3 Coder 30b"
+        },
+        "deepseek-r1:32b": {
+          "name": "Deepseek-r1 32b"
+        },
+        "gemma3:27b": {
+          "name": "Gemma3 27b"
+        },
+        "llama3:8b": {
+          "name": "Llama3 8b"
+        },
+        "llama3.1:70b": {
+          "name": "Llama3.1 70b"
+        }
+      }
+    }
+  }
+}

@@ -1,15 +1,23 @@
 {
   description = "Template Module for Personal AI Assistant (PAI) - An advanced AI-powered development environment using Claude Code";
 
+  nixConfig = {
+    extra-substituters = ["https://numtide.cachix.org"];
+    extra-trusted-public-keys = ["numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    # for some things not available in nixpkgs, but also it stays up-to-date more
+    nix-ai-tools.url = "github:numtide/nix-ai-tools";
   };
 
   outputs = inputs @ {
     self,
     flake-parts,
     nixpkgs,
+    nix-ai-tools,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} (let
@@ -77,6 +85,11 @@
                   type = lib.types.bool;
                   default = true;
                   description = "Gemini included and given an environment";
+                };
+                enableOpencode = lib.mkOption {
+                  type = lib.types.bool;
+                  default = true;
+                  description = "OpenCode included and given an environment";
                 };
               };
               extraClaudeSettings = {
@@ -188,42 +201,52 @@
                 [
                   bun
                   jq
-                  claude-code
+                  nix-ai-tools.packages.${system}.claude-code
+                  #nix-ai-tools.package.${pkgs.stdenv.hostPlatform.system}.openskills
                 ]
-                ++ lib.optionals (flakeConfig.pai.otherTools.enableCodex) [codex]
+                ++ lib.optionals (flakeConfig.pai.otherTools.enableCodex) [
+                  nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.codex
+                ]
                 ++ lib.optionals (flakeConfig.pai.otherTools.enableFabric) [fabric-ai]
-                ++ lib.optionals (flakeConfig.pai.otherTools.enableGemini) [gemini-cli]
+                ++ lib.optionals (flakeConfig.pai.otherTools.enableGemini) [
+                  nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli
+                ]
+                ++ lib.optionals (flakeConfig.pai.otherTools.enableOpencode) [
+                  nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+                  #ollama
+                ]
                 ++ flakeConfig.pai.extraPackages;
 
-              mergedPackages = with pkgs; corePackages ++ [ccusage];
+              mergedPackages = corePackages ++ [ccusage];
 
               binariesToWrap = ["fabric" "gemini" "codex" "claude"];
-              mkWrapSecret = binary: let
-                # list of secrets to populate into the environment
-                secrets =
-                  {
-                    #MCP_API_KEY = "mcpkey";
-                    OPENAI_API_KEY = "openaikey";
-                    GOOGLE_API_KEY = "geminikey";
-                    REF_TOOLS_KEY = "reftoolskey";
-                    OLLAMA_KEY = "ollamakey";
-                  }
-                  // lib.optionalAttrs (binary != "claude") {
-                    ANTHROPIC_API_KEY = "anthropickey";
-                  }
-                  // flakeConfig.pai.extraSecrets;
 
-                # function returning the command for fetching secrets
-                secretLookup = secretname:
-                  if pkgs.stdenv.isLinux
-                  then ''$(secret-tool lookup api ${secretname} 2>/dev/null | tr -d \"\n\")''
-                  else ''$(security find-generic-password -l ${secretname} -g -w 2>/dev/null |tr -d \"\n\")'';
-              in ''
+              # list of secrets to populate into the environment
+              secrets = binary:
+                {
+                  #MCP_API_KEY = "mcpkey";
+                  OPENAI_API_KEY = "openaikey";
+                  GOOGLE_API_KEY = "geminikey";
+                  REF_TOOLS_KEY = "reftoolskey";
+                  OLLAMA_KEY = "ollamakey";
+                }
+                // lib.optionalAttrs (binary != "claude") {
+                  ANTHROPIC_API_KEY = "anthropickey";
+                }
+                // flakeConfig.pai.extraSecrets;
+
+              # function returning the command for fetching secrets
+              secretLookup = secretname:
+                if pkgs.stdenv.isLinux
+                then ''$(secret-tool lookup api ${secretname} 2>/dev/null | tr -d \"\n\")''
+                else ''$(security find-generic-password -l ${secretname} -g -w 2>/dev/null |tr -d \"\n\")'';
+
+              mkWrapSecret = binary: ''
                 [ -e $out/bin/${binary} ] && wrapProgram $out/bin/${binary} \
                 ${lib.concatStringsSep " " (lib.mapAttrsToList (
                     key: value: ''--run 'export ${key}="${secretLookup value}"' ''
                   )
-                  secrets)} \
+                  (secrets binary))} \
                   --prefix PATH : "$out/bin" \
                   --set OLLAMA_HOST "${flakeConfig.pai.ollamaServer}"
               '';
@@ -237,7 +260,7 @@
                 # allowSubstitutes = false;
                 buildInputs = mergedPackages;
                 nativeBuildInputs = [
-                  pkgs.makeBinaryWrapper
+                  #pkgs.makeBinaryWrapper
                   pkgs.makeWrapper
                 ];
                 meta.mainProgram = flakeConfig.pai.commandName;
@@ -275,7 +298,7 @@
                   )}
 
                   # Next put the ai assistant into bin with the proper added environment
-                  makeBinaryWrapper "$out/bin/claude" "$out/bin/${flakeConfig.pai.commandName}" \
+                  makeWrapper "$out/bin/claude" "$out/bin/${flakeConfig.pai.commandName}" \
                       --set PAI_DIR "$out" \
                       --set DA "${flakeConfig.pai.assistantName}" \
                       --set DA_COLOR "${flakeConfig.pai.assistantColor}" \
@@ -283,8 +306,27 @@
                       --prefix PATH : "$out/bin" \
                       --add-flags "--settings $out/claude/settings.json --mcp-config $out/claude/mcp.json --plugin-dir $out/claude"
 
+                  # Next put the private ollama ai assistant into bin with the proper added environment
+                  makeWrapper "$out/bin/opencode" "$out/bin/${flakeConfig.pai.commandName}-priv" \
+                      ${lib.concatStringsSep " " (lib.mapAttrsToList (
+                      key: value: ''--run 'export ${key}="${secretLookup value}"' ''
+                    )
+                    (secrets "opencode"))} \
+                      --set PAI_DIR "$out" \
+                      --set DA "${flakeConfig.pai.assistantName}" \
+                      --set DA_COLOR "${flakeConfig.pai.assistantColor}" \
+                      --set ENGINEER_NAME "${flakeConfig.pai.userFullName}" \
+                      --set OPENCODE_CONFIG $out/opencode/config.json \
+                      --set OPENCODE_CONFIG_DIR $out/opencode \
+                      --prefix PATH : "$out/bin"
+
                   # Copy in all the settings files
                   cp -R ${localsrc}/claude "$out/"
+                  cp -R ${localsrc}/opencode "$out/"
+
+                  # Getting permission denied on these
+                  #ln -s $out/claude/agents $out/opencode/agent
+                  #ln -s $out/claude/skills $out/opencode/skills
 
 
                   # Do substitutions
@@ -351,6 +393,9 @@
                       --replace-quiet @paiBasePath@ "$out"
                   substituteInPlace $out/claude/skills/research/workflows/conduct.md \
                       --replace-quiet @assistantName@ '${flakeConfig.pai.assistantName}'
+                  substituteInPlace $out/opencode/config.json \
+                      --replace-quiet @ollamaHost@ '${flakeConfig.pai.ollamaServer}' \
+                      --replace-quiet @paiBasePath@ "$out"
 
                 '';
               };
