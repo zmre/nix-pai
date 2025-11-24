@@ -103,6 +103,11 @@
                   default = [];
                   description = "https://code.claude.com/docs/en/iam#tool-specific-permission-rules";
                 };
+                permissionsAsk = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  default = [];
+                  description = "https://code.claude.com/docs/en/iam#tool-specific-permission-rules";
+                };
                 permissionsDeny = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   default = [];
@@ -339,9 +344,9 @@
                       --replace-quiet @companyAnnouncements@ "${flakeConfig.pai.extraClaudeSettings.companyAnnouncements}" \
                       --replace-quiet @assistantName@ '${flakeConfig.pai.assistantName}' \
                       --replace-quiet @permissionsAllow@ '${lib.strings.concatMapStrings (x: ''"${x}", '') flakeConfig.pai.extraClaudeSettings.permissionsAllow}' \
+                      --replace-quiet @permissionsAsk@ '${lib.strings.concatMapStrings (x: ''"${x}", '') flakeConfig.pai.extraClaudeSettings.permissionsAsk}' \
                       --replace-quiet @permissionsDeny@ '${lib.strings.concatMapStrings (x: ''"${x}", '') flakeConfig.pai.extraClaudeSettings.permissionsAllow}'
 
-                  echo 2
                   substituteInPlace $out/claude/agents/architect.md \
                       --replace-quiet @assistantName@ '${flakeConfig.pai.assistantName}' \
                       --replace-quiet @paiBasePath@ "$out"
@@ -372,7 +377,6 @@
                   substituteInPlace $out/claude/agents/researcher.md \
                       --replace-quiet @assistantName@ '${flakeConfig.pai.assistantName}' \
                       --replace-quiet @paiBasePath@ "$out"
-                  echo core
                   substituteInPlace $out/claude/skills/CORE/SKILL.md \
                       --replace-quiet @assistantName@ '${flakeConfig.pai.assistantName}' \
                       --replace-quiet @keyContacts@ '${flakeConfig.pai.keyContacts}' \
