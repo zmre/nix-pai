@@ -79,7 +79,7 @@
       "Bash(mkfs.ext4:*)",
       "Bash( /dev/sda)",
       "Bash(> /dev/sda)",
-      "Read(./.env)",
+      "Read(./.env)"
     ]
   },
   "enableAllProjectMcpServers": true,
