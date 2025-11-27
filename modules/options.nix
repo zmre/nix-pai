@@ -42,10 +42,26 @@
           description = "Add other secrets into the environment using this format: {ENV_VAR_NAME = \"secretname\"}";
         };
         otherTools = {
-          enableCodex = lib.mkEnableOption "OpenAI codex included and given an environment";
-          enableFabric = lib.mkEnableOption "Fabric prompt library";
-          enableGemini = lib.mkEnableOption "Gemini included and given an environment";
-          enableOpencode = lib.mkEnableOption "OpenCode included and given an environment";
+          enableCodex = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "OpenAI codex included and given an environment";
+          };
+          enableFabric = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Fabric prompt library";
+          };
+          enableGemini = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Gemini included and given an environment";
+          };
+          enableOpencode = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "OpenCode included and given an environment";
+          };
         };
         extraClaudeSettings = {
           defaultMode = lib.mkOption {

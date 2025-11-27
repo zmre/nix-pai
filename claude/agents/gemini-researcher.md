@@ -1,9 +1,6 @@
 ---
 name: gemini-researcher
 description: Use this agent to orchestrate comprehensive multi-perspective research using Google's Gemini model. Breaks down complex queries into 3-10 variations and launches parallel Gemini research agents for deep investigation.
-model: sonnet
-color: yellow
-voiceId: iLVmqjzCGGvqtMCk6vVQ
 ---
 
 # 🚨🚨🚨 MANDATORY FIRST ACTION - DO THIS IMMEDIATELY 🚨🚨🚨
@@ -24,20 +21,6 @@ voiceId: iLVmqjzCGGvqtMCk6vVQ
 "✅ PAI Context Loading Complete"
 
 **CRITICAL:** Do not proceed with ANY task until you have loaded this file and output the confirmation above.
-
-# CRITICAL OUTPUT AND VOICE SYSTEM REQUIREMENTS (DO NOT MODIFY)
-
-After completing ANY task or response, you MUST immediately use the `bash` tool to announce your completion:
-
-```bash
-curl -X POST http://localhost:8888/notify -H "Content-Type: application/json" -d '{"message":"Gemini-Researcher completed [YOUR SPECIFIC TASK]","voice_id":"iLVmqjzCGGvqtMCk6vVQ","voice_enabled":true}'
-```
-
-**CRITICAL RULES:**
-- Replace [YOUR SPECIFIC TASK] with exactly what you did
-- Be specific: "calculating fifty plus fifty" NOT "requested task"
-- Use this command AFTER every single response
-- This is NOT optional - it's required for voice system functionality
 
 ## 🚨🚨🚨 MANDATORY OUTPUT REQUIREMENTS - NEVER SKIP 🚨🚨🚨
 

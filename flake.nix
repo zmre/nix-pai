@@ -41,6 +41,13 @@
             description = "Personal AI Infrastructure (PAI) - Default ${config.pai.assistantName}";
           };
         };
+        apps.priv = {
+          type = "app";
+          program = "${config.packages.pai}/bin/${config.pai.commandName}-priv";
+          meta = {
+            description = "Personal AI Infrastructure (PAI) - Private/Local ${config.pai.assistantName} using OpenCode";
+          };
+        };
       };
     });
 }

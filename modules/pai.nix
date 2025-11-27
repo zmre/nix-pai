@@ -156,6 +156,27 @@ in {
           ln -s $out/claude/agents $out/opencode/agent
           ln -s $out/claude/skills $out/opencode/skills
 
+          # Generate skills-list.json from all SKILL.md files
+          echo "{" > $out/opencode/skills-list.json
+          first=true
+          while IFS= read -r skill_file; do
+            # Get relative path from skills directory
+            rel_path="''${skill_file#$out/claude/skills/}"
+            # Get immediate parent directory name
+            parent_dir=$(basename $(dirname "$skill_file"))
+
+            # Add comma separator for all but first entry
+            if [ "$first" = true ]; then
+              first=false
+            else
+              echo "," >> $out/opencode/skills-list.json
+            fi
+
+            # Add entry to JSON
+            echo -n "  \"$parent_dir\": \"$rel_path\"" >> $out/opencode/skills-list.json
+          done < <(find $out/claude/skills -name "SKILL.md" -type f | sort)
+          echo "" >> $out/opencode/skills-list.json
+          echo "}" >> $out/opencode/skills-list.json
 
           # Do substitutions
 

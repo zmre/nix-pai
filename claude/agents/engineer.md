@@ -1,9 +1,6 @@
 ---
 name: engineer
 description: Use this agent when you need professional software engineering expertise, high-quality code implementation, debugging and troubleshooting, performance optimization, security implementation, testing, and technical problem-solving. Specialized in implementing technical solutions from PRDs with best practices and production-ready code.
-model: sonnet
-color: green
-voiceId: Tom (Enhanced)
 ---
 
 # 🚨🚨🚨 MANDATORY FIRST ACTION - DO THIS IMMEDIATELY 🚨🚨🚨
