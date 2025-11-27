@@ -22,7 +22,7 @@ in {
         [
           bun
           jq
-          inputs.nix-ai-tools.packages.${system}.claude-code
+          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
           #nix-ai-tools.package.${pkgs.stdenv.hostPlatform.system}.openskills
         ]
         ++ lib.optionals (perSystemConfig.pai.otherTools.enableCodex) [
@@ -131,27 +131,30 @@ in {
 
           # Next put the private ollama ai assistant into bin with the proper added environment
           ${lib.optionalString (perSystemConfig.pai.otherTools.enableOpencode) ''
-          makeWrapper "$out/bin/opencode" "$out/bin/${perSystemConfig.pai.commandName}-priv" \
-              ${lib.concatStringsSep " " (lib.mapAttrsToList (
-              key: value: ''--run 'export ${key}="${secretLookup value}"' ''
-            )
-            (secrets "opencode"))} \
-              --set PAI_DIR "$out" \
-              --set DA "${perSystemConfig.pai.assistantName}" \
-              --set DA_COLOR "${perSystemConfig.pai.assistantColor}" \
-              --set ENGINEER_NAME "${perSystemConfig.pai.userFullName}" \
-              --set OPENCODE_CONFIG $out/opencode/config.json \
-              --set OPENCODE_CONFIG_DIR $out/opencode \
-              --prefix PATH : "$out/bin"
+            makeWrapper "$out/bin/opencode" "$out/bin/${perSystemConfig.pai.commandName}-priv" \
+                ${lib.concatStringsSep " " (lib.mapAttrsToList (
+                key: value: ''--run 'export ${key}="${secretLookup value}"' ''
+              )
+              (secrets "opencode"))} \
+                --set PAI_DIR "$out" \
+                --set DA "${perSystemConfig.pai.assistantName}" \
+                --set DA_COLOR "${perSystemConfig.pai.assistantColor}" \
+                --set ENGINEER_NAME "${perSystemConfig.pai.userFullName}" \
+                --set OPENCODE_CONFIG $out/opencode/config.json \
+                --set OPENCODE_CONFIG_DIR $out/opencode \
+                --prefix PATH : "$out/bin"
           ''}
 
           # Copy in all the settings files
           cp -R ${localsrc}/claude "$out/"
-          cp -R ${localsrc}/opencode "$out/"
 
-          # Getting permission denied on these
-          #ln -s $out/claude/agents $out/opencode/agent
-          #ln -s $out/claude/skills $out/opencode/skills
+          # Create opencode directory structure and copy config
+          mkdir -p $out/opencode
+          cp ${localsrc}/opencode/config.json $out/opencode/
+
+          # Link agents and skills from claude to opencode
+          ln -s $out/claude/agents $out/opencode/agent
+          ln -s $out/claude/skills $out/opencode/skills
 
 
           # Do substitutions

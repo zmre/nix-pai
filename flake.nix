@@ -20,11 +20,10 @@
     in {
       systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
 
-      debug = true;
+      #debug = true;
 
       imports = [
         flake-parts.flakeModules.flakeModules
-        flake-parts.flakeModules.modules # lets us publish our modules
         ./modules/pai.nix
       ];
 
@@ -35,6 +34,13 @@
       perSystem = {config, ...}: {
         # imports = [./modules/options.nix];
         packages.default = config.packages.pai;
+        apps.default = {
+          type = "app";
+          program = "${config.packages.pai}/bin/${config.pai.commandName}";
+          meta = {
+            description = "Personal AI Infrastructure (PAI) - Default ${config.pai.assistantName}";
+          };
+        };
       };
     });
 }
