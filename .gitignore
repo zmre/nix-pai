@@ -65,3 +65,4 @@ credentials/
 # Nix-generated files (generated from templates via substituteAll)
 agent-sessions.json
 history/
+result
