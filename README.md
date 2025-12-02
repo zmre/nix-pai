@@ -33,10 +33,9 @@ In both cases you'll be prompted for the password (API key).
 Here are the ones we have baked in. If you don't have any, the env var will be blank and no harm done:
 
 * openaikey
-* geminikey
-* anthropickey -- not needed for claude
 * reftoolskey
-* ollamakey
+
+(I've made the list of secrets shorter as I realize how to log in to some tools with oauth. The reason to prefer oauth here is purely performance: each password fetch attempt slows down startup.)
 
 To be clear: you should be able to use your assistant just fine without doing any of this.
 

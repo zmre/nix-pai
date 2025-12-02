@@ -47,9 +47,9 @@ in {
         {
           #MCP_API_KEY = "mcpkey";
           OPENAI_API_KEY = "openaikey";
-          GOOGLE_API_KEY = "geminikey";
+          #GOOGLE_API_KEY = "geminikey";
           REF_TOOLS_KEY = "reftoolskey";
-          OLLAMA_KEY = "ollamakey";
+          #OLLAMA_KEY = "ollamakey";
         }
         // lib.optionalAttrs (binary != "claude") {
           ANTHROPIC_API_KEY = "anthropickey";
