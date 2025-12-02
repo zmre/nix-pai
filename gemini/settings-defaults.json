@@ -1,0 +1,39 @@
+{
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  },
+  "general": {
+    "vimMode": true,
+    "previewFeatures": true,
+    "disableAutoUpdate": true,
+    "sessionRetention": {
+      "enabled": false
+    }
+  },
+  "output": {
+    "format": "text"
+  },
+  "ui": {
+    "showStatusInTitle": true,
+    "footer": {
+      "hideSandboxStatus": true,
+      "hideContextPercentage": false
+    },
+    "showMemoryUsage": true,
+    "showModelInfoInChat": true
+  },
+  "tools": {
+    "shell": {
+      "showColor": true
+    }
+  },
+  "context": {
+    "fileName": ["AGENTS.md", "GEMINI.md", "CLAUDE.md", "SKILL.md"],
+    "includeDirectories": []
+  },
+  "privacy": {
+    "usageStatisticsEnabled": false
+  }
+}

@@ -147,6 +147,7 @@ in {
 
           # Copy in all the settings files
           cp -R ${localsrc}/claude "$out/"
+          cp -R ${localsrc}/gemini "$out/"
 
           # Create opencode directory structure and copy config
           mkdir -p $out/opencode
