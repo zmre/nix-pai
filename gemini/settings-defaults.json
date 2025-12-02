@@ -2,7 +2,8 @@
   "security": {
     "auth": {
       "selectedType": "oauth-personal"
-    }
+    },
+    "disableYoloMode": true
   },
   "general": {
     "vimMode": true,
@@ -30,8 +31,9 @@
     }
   },
   "context": {
-    "fileName": ["AGENTS.md", "GEMINI.md", "CLAUDE.md", "SKILL.md"],
-    "includeDirectories": []
+    "fileName": ["AGENTS.md", "GEMINI.md", "CLAUDE.md"],
+    "includeDirectories": ["@paiBasePath@/gemini"],
+    "loadMemoryFromIncludeDirectories": true
   },
   "privacy": {
     "usageStatisticsEnabled": false

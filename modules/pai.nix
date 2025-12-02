@@ -70,6 +70,7 @@ in {
           (secrets binary))} \
           --prefix PATH : "$out/bin" \
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
+          --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
           --set OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
           --set OLLAMA_API_URL "${perSystemConfig.pai.ollamaServer}"
       '';
@@ -85,6 +86,7 @@ in {
         nativeBuildInputs = [
           #pkgs.makeBinaryWrapper
           pkgs.makeWrapper
+          pkgs.gawk
         ];
         meta.mainProgram = perSystemConfig.pai.commandName;
         buildPhase = ''
@@ -146,8 +148,11 @@ in {
           ''}
 
           # Copy in all the settings files
-          cp -R ${localsrc}/claude "$out/"
-          cp -R ${localsrc}/gemini "$out/"
+          cp -R "${localsrc}/claude" "$out/"
+          mkdir -p "$out/gemini"
+          cp "${localsrc}/gemini/settings-defaults.json" "$out/gemini/"
+          cp "${localsrc}/claude/skills/CORE/SKILL.md" "$out/gemini/GEMINI.md"
+          chmod u+w "$out/gemini/GEMINI.md"
 
           # Create opencode directory structure and copy config
           mkdir -p $out/opencode
@@ -156,6 +161,60 @@ in {
           # Link agents and skills from claude to opencode
           ln -s $out/claude/agents $out/opencode/agent
           ln -s $out/claude/skills $out/opencode/skills
+
+          # Generate markdown describing all skills for gemini
+          echo -e "\n\n## Skills\n\nYou have access to a number of skills files, which contain prompts and instructions to help you in achieving your and in using tools. Please read each skill description below carefully and read the associated file when it is relevant to your task.\n\n" >> $out/gemini/GEMINI.md
+
+          find "$out/claude/skills" -name "SKILL.md" -type f | sort | while read -r skill_file; do
+              # Get relative path from skills directory
+              rel_path="''${skill_file#$SKILLS_DIR/}"
+
+              # Extract name and description from YAML frontmatter using awk
+              eval "$(awk '
+                  BEGIN {
+                      in_frontmatter = 0
+                      name = ""
+                      description = ""
+                      reading_desc = 0
+                  }
+                  /^---$/ {
+                      in_frontmatter++
+                      next
+                  }
+                  in_frontmatter == 1 {
+                      if ($1 == "name:") {
+                          name = substr($0, 6)
+                          gsub(/^[ \t]+|[ \t]+$/, "", name)  # trim whitespace
+                          reading_desc = 0
+                      } else if ($1 == "description:") {
+                          description = substr($0, 13)
+                          gsub(/^[ \t]+|[ \t]+$/, "", description)  # trim whitespace
+                          reading_desc = 1
+                      } else if (reading_desc && NF > 0 && $1 !~ /^[a-z]+:$/) {
+                          # Continue reading multi-line description
+                          description = description " " $0
+                          gsub(/^[ \t]+|[ \t]+$/, "", description)
+                      } else {
+                          reading_desc = 0
+                      }
+                  }
+                  in_frontmatter == 2 {
+                      exit
+                  }
+                  END {
+                      # Escape quotes for shell eval
+                      gsub(/"/, "\\\"", name)
+                      gsub(/"/, "\\\"", description)
+                      print "skill_name=\"" name "\""
+                      print "skill_desc=\"" description "\""
+                  }
+              ' "$skill_file")"
+
+              # Output in markdown format
+              if [[ -n "$skill_name" && "$skill_name" != "PAI" ]]; then
+                  echo "* [$skill_name]($out/claude/skills/$rel_path) - $skill_desc" >> $out/gemini/GEMINI.md
+              fi
+          done
 
           # Generate skills-list.json from all SKILL.md files
           echo "{" > $out/opencode/skills-list.json
@@ -191,6 +250,8 @@ in {
               --replace-quiet @permissionsAsk@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsAsk}' \
               --replace-quiet @permissionsDeny@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsAllow}'
 
+          substituteInPlace $out/gemini/settings-defaults.json \
+              --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/agents/architect.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"
@@ -220,6 +281,14 @@ in {
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/agents/researcher.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+              --replace-quiet @paiBasePath@ "$out"
+          substituteInPlace $out/gemini/GEMINI.md \
+              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+              --replace-quiet @keyContacts@ '${perSystemConfig.pai.keyContacts}' \
+              --replace-quiet @devStackPrefs@ '${perSystemConfig.pai.devStackPrefs}' \
+              --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
+              --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
+              --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/skills/CORE/SKILL.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
