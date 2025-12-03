@@ -1,0 +1,29 @@
+project_doc_fallback_filenames = ["CLAUDE.md"]
+log_user_prompt = false
+
+codex_home = "@paiBasePath@/codex"
+
+instructions = '''
+  Please acknowledge you've read this by saying, "Setup complete." Then go read @@paiBasePath@/gemini/GEMINI.md for base instructions.
+'''
+
+[model_providers.ollama]
+name = "Ollama"
+base_url = "@ollamaHost@/v1"
+
+[shell_environment_policy]
+inherit = "none"
+set = { PATH = "/usr/bin", MY_FLAG = "1" }
+ignore_default_excludes = false
+exclude = ["AWS_*", "AZURE_*"]
+include_only = ["PATH", "HOME"]
+
+[features]
+web_search_request = true
+skills = true
+
+[history]
+persistence = "none"
+
+[tui]
+animations = true

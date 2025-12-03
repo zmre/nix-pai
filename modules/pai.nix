@@ -51,9 +51,9 @@ in {
           REF_TOOLS_KEY = "reftoolskey";
           #OLLAMA_KEY = "ollamakey";
         }
-        // lib.optionalAttrs (binary != "claude") {
-          ANTHROPIC_API_KEY = "anthropickey";
-        }
+        # // lib.optionalAttrs (binary != "claude") {
+        #   ANTHROPIC_API_KEY = "anthropickey";
+        # }
         // perSystemConfig.pai.extraSecrets;
 
       # function returning the command for fetching secrets
@@ -62,6 +62,7 @@ in {
         then ''$(secret-tool lookup api ${secretname} 2>/dev/null | tr -d \"\n\")''
         else ''$(security find-generic-password -l ${secretname} -g -w 2>/dev/null |tr -d \"\n\")'';
 
+      # needs to be rw, so this fails: --set CODEX_HOME $out/codex \
       mkWrapSecret = binary: ''
         [ -e $out/bin/${binary} ] && wrapProgram $out/bin/${binary} \
         ${lib.concatStringsSep " " (lib.mapAttrsToList (
@@ -71,6 +72,7 @@ in {
           --prefix PATH : "$out/bin" \
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
+          --set CODEX_MANAGED_CONFIG_PATH $out/codex \
           --set OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
           --set OLLAMA_API_URL "${perSystemConfig.pai.ollamaServer}"
       '';
@@ -149,6 +151,8 @@ in {
 
           # Copy in all the settings files
           cp -R "${localsrc}/claude" "$out/"
+          mkdir -p "$out/codex"
+          cp  "${localsrc}/codex/managed_config.toml" "$out/codex"
           mkdir -p "$out/gemini"
           cp "${localsrc}/gemini/settings-defaults.json" "$out/gemini/"
           cp "${localsrc}/claude/skills/CORE/SKILL.md" "$out/gemini/GEMINI.md"
@@ -161,6 +165,7 @@ in {
           # Link agents and skills from claude to opencode
           ln -s $out/claude/agents $out/opencode/agent
           ln -s $out/claude/skills $out/opencode/skills
+          ln -s $out/claude/skills $out/codex/skills
 
           # Generate markdown describing all skills for gemini
           echo -e "\n\n## Skills\n\nYou have access to a number of skills files, which contain prompts and instructions to help you in achieving your and in using tools. Please read each skill description below carefully and read the associated file when it is relevant to your task.\n\n" >> $out/gemini/GEMINI.md
@@ -251,6 +256,9 @@ in {
               --replace-quiet @permissionsDeny@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsAllow}'
 
           substituteInPlace $out/gemini/settings-defaults.json \
+              --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
+              --replace-quiet @paiBasePath@ "$out"
+          substituteInPlace $out/codex/managed_config.toml \
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/agents/architect.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
