@@ -27,13 +27,15 @@
     OLLAMA_API_URL = "${perSystemConfig.pai.ollamaServer}";
   };
 
+  buildInputs = [pkgs.fabric-ai pkgs.yt-dlp] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.libsecret];
+
   # Build wrapped fabric executable
   mkFabricWrapper = pkgs.stdenvNoCC.mkDerivation {
     name = "fabric-wrapped";
     pname = "fabric-wrapped";
 
     # We need yt-dlp for fetching transcripts
-    buildInputs = [pkgs.fabric-ai pkgs.yt-dlp];
+    buildInputs = buildInputs;
     nativeBuildInputs = [pkgs.makeWrapper];
 
     dontUnpack = true;
@@ -45,6 +47,7 @@
       makeWrapper ${pkgs.fabric-ai}/bin/fabric $out/bin/fabric \
         --run 'mkdir -p ~/.config/fabric' \
         --run 'touch ~/.config/fabric/.env' \
+        --prefix PATH : ${pkgs.lib.makeBinPath buildInputs} \
         ${lib.concatStringsSep " \\\n        " (
         lib.mapAttrsToList (key: value: "--run 'export ${key}=\"${secretLookup value}\"'") fabricSecrets
       )} \
