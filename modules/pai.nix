@@ -41,6 +41,7 @@ in {
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.opencode
           #ollama
         ]
+        ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
         ++ perSystemConfig.pai.extraPackages;
 
       mergedPackages = corePackages ++ [ccusage];
