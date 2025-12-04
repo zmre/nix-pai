@@ -12,8 +12,6 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     # for some things not available in nixpkgs, but also it stays up-to-date more
     nix-ai-tools.url = "github:numtide/nix-ai-tools";
-    fabric.url = "github:danielmiessler/fabric";
-    fabric.flake = false;
   };
 
   outputs = inputs @ {flake-parts, ...}:
