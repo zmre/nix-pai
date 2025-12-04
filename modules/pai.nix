@@ -18,6 +18,11 @@ in {
         ${pkgs.bun}/bin/bunx ccusage@latest
       '';
 
+      # Import fabric module with necessary dependencies
+      fabricWrapped = import ./fabric.nix {
+        inherit pkgs lib secretLookup perSystemConfig;
+      };
+
       corePackages = with pkgs;
         [
           bun
@@ -28,7 +33,7 @@ in {
         ++ lib.optionals (perSystemConfig.pai.otherTools.enableCodex) [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.codex
         ]
-        ++ lib.optionals (perSystemConfig.pai.otherTools.enableFabric) [fabric-ai]
+        ++ lib.optionals (perSystemConfig.pai.otherTools.enableFabric) [fabricWrapped.package]
         ++ lib.optionals (perSystemConfig.pai.otherTools.enableGemini) [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli
         ]
@@ -40,7 +45,7 @@ in {
 
       mergedPackages = corePackages ++ [ccusage];
 
-      binariesToWrap = ["fabric" "gemini" "codex" "claude"];
+      binariesToWrap = ["gemini" "codex" "claude"];
 
       # list of secrets to populate into the environment
       secrets = binary:
@@ -73,14 +78,8 @@ in {
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
           --set CODEX_MANAGED_CONFIG_PATH $out/codex \
-          --set PATTERNS_LOADER_GIT_REPO_PATTERNS_FOLDER ${pkgs.fabric-ai.src}/data/patterns \
-          --set PROMPT_STRATEGIES_GIT_REPO_URL https://github.com/danielmiessler/fabric.git \
-          --set PATTERNS_LOADER_GIT_REPO_URL https://github.com/danielmiessler/fabric.git \
-          --set DEFAULT_VENDOR Ollama \
-          --set DEFAULT_MODEL gpt-oss:20b \
-          --set PROMPT_STRATEGIES_GIT_REPO_STRATEGIES_FOLDER ${pkgs.fabric-ai.src}/data/strategies \
           --set OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
-          --set OLLAMA_API_URL "${perSystemConfig.pai.ollamaServer}"
+          --set OLLAMA_API_URL "http://${perSystemConfig.pai.ollamaServer}"
       '';
 
       pai = pkgs.stdenvNoCC.mkDerivation {

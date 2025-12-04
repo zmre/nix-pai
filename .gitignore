@@ -66,3 +66,5 @@ credentials/
 agent-sessions.json
 history/
 result
+settings.local.json
+.claude/
