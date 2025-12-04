@@ -24,7 +24,7 @@
 
     # Ollama configuration (for local models)
     OLLAMA_HOST = perSystemConfig.pai.ollamaServer;
-    OLLAMA_API_URL = "http://${perSystemConfig.pai.ollamaServer}";
+    OLLAMA_API_URL = "${perSystemConfig.pai.ollamaServer}";
   };
 
   # Build wrapped fabric executable
