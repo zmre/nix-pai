@@ -75,6 +75,7 @@ in {
           --set CODEX_MANAGED_CONFIG_PATH $out/codex \
           --set PATTERNS_LOADER_GIT_REPO_PATTERNS_FOLDER ${pkgs.fabric-ai.src}/data/patterns \
           --set PROMPT_STRATEGIES_GIT_REPO_URL https://github.com/danielmiessler/fabric.git \
+          --set PATTERNS_LOADER_GIT_REPO_URL https://github.com/danielmiessler/fabric.git \
           --set DEFAULT_VENDOR Ollama \
           --set DEFAULT_MODEL gpt-oss:20b \
           --set PROMPT_STRATEGIES_GIT_REPO_STRATEGIES_FOLDER ${pkgs.fabric-ai.src}/data/strategies \
