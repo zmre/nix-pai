@@ -1,5 +1,6 @@
 {inputs, ...}: let
   localsrc = ../.;
+  localinputs = inputs;
 in {
   imports = [./options.nix];
   # Define system-dependent outputs based on the option
@@ -73,11 +74,11 @@ in {
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
           --set CODEX_MANAGED_CONFIG_PATH $out/codex \
-          --set PATTERNS_LOADER_GIT_REPO_PATTERNS_FOLDER ${inputs.fabric}/data/patterns \
+          --set PATTERNS_LOADER_GIT_REPO_PATTERNS_FOLDER ${localinputs.fabric}/data/patterns \
           --set PROMPT_STRATEGIES_GIT_REPO_URL https://github.com/danielmiessler/fabric.git \
           --set DEFAULT_VENDOR Ollama \
           --set DEFAULT_MODEL gpt-oss:20b \
-          --set PROMPT_STRATEGIES_GIT_REPO_STRATEGIES_FOLDER ${inputs.fabric}/data/strategies \
+          --set PROMPT_STRATEGIES_GIT_REPO_STRATEGIES_FOLDER ${localinputs.fabric}/data/strategies \
           --set OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
           --set OLLAMA_API_URL "${perSystemConfig.pai.ollamaServer}"
       '';
