@@ -20,7 +20,7 @@ LOCK_FILE="/tmp/.claude_ccusage.lock"
 CACHE_AGE=30   # 30 seconds for more real-time updates
 
 # Count items from specified directories
-claude_dir="${PAI_DIR:-$HOME/.claude}/claude"
+claude_dir="@paiBasePath@/claude"
 commands_count=0
 mcps_count=0
 skills_count=0
@@ -32,7 +32,7 @@ if [ -d "$claude_dir/commands" ]; then
 fi
 
 if [ -d "$claude_dir/skills" ]; then
-  skills_count=$(find "$claude_dir/skills" SKILL.md 2>/dev/null |wc -l | tr -d ' ')
+  skills_count=$(find "$claude_dir/skills" -name SKILL.md 2>/dev/null |wc -l | tr -d ' ')
 fi
 
 # Count MCPs from .mcp.json (single parse)

@@ -269,6 +269,8 @@ in {
           substituteInPlace $out/claude/agents/architect.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"
+          substituteInPlace $out/claude/statusline-command.sh \
+              --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/hooks/capture-all-events.ts \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"
