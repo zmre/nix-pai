@@ -59,17 +59,18 @@
     ],
     "ask": [
       @permissionsAsk@
-      "mcp__Ref"
+      "mcp__Ref",
+      "Bash(sudo:*)",
+      "Bash(git push:*)",
+      "Read(./.env)"
     ],
     "deny": [
       @permissionsDeny@
       "Bash(aws:*)",
       "Bash(gcp:*)",
-      "Bash(git push:*)",
       "Bash(gcloud:*)",
       "Bash(kubectl:*)",
       "Bash(vault:*)",
-      "Bash(sudo:*)",
       "Bash(diskutil:*)",
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
@@ -84,8 +85,7 @@
       "Bash(dd if=/dev/zero of=/dev/sda)",
       "Bash(mkfs.ext4:*)",
       "Bash( /dev/sda)",
-      "Bash(> /dev/sda)",
-      "Read(./.env)"
+      "Bash(> /dev/sda)"
     ]
   },
   "enableAllProjectMcpServers": true,
