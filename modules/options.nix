@@ -123,6 +123,11 @@
               - Python (if needed): uv (NOT pip)
           '';
         };
+        additionalCoreInstructions = lib.mkOption {
+          type = lib.types.str;
+          default = "";
+          description = "Add content to the bottom of the CORE skill file. You should use markdown headers and styling for this otherwise unlabeled section.";
+        };
         keyBio = lib.mkOption {
           type = lib.types.str;
           default = ''

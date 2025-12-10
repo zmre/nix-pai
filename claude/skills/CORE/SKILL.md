@@ -68,6 +68,10 @@ Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUT
 
 ## Extended Instructions
 
+### Subagent Usage
+
+When in a programming project folder, prompt the user about activating the Engineer subagent.
+
 ### Scratchpad for Test/Random Tasks (Detailed)
 
 When working on test tasks, experiments, or random one-off requests, ALWAYS work in `~/.local/share/claude/scratchpad/` with proper timestamp organization:
@@ -123,4 +127,4 @@ The intern agent is your high-agency genius generalist - perfect for parallel ex
 - Launch as many as needed (no artificial limit)
 - **ALWAYS launch a spotcheck intern after parallel work completes**
 
-
+@additionalCoreInstructions@

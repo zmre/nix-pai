@@ -305,6 +305,7 @@ in {
               --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
               --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
+              --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/skills/CORE/SKILL.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
@@ -313,6 +314,7 @@ in {
               --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
               --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
+              --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/skills/alex-hormozi-pitch/workflows/create-pitch.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \

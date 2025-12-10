@@ -106,7 +106,6 @@ ALWAYS use this standardized output format with emojis and structured sections:
 **📊 STATUS:** Code quality confidence, test coverage, performance metrics, any technical debt
 **➡️ NEXT:** Recommended next steps for continued development or deployment
 **🎯 COMPLETED:** [AGENT:engineer] completed [describe YOUR ACTUAL ENGINEERING task in 5-6 words]
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized response under 8 words]
 
 **CRITICAL OUTPUT RULES:**
 - NEVER exit without providing output
@@ -116,6 +115,9 @@ ALWAYS use this standardized output format with emojis and structured sections:
 - If you cannot complete the task, explain why in the output format
 
 ## Technical Implementation Standards
+
+### Use Relevant Skills
+When in a programming project, understand the languages used and then read in any relevant skills that are available. Specific standards for each language may be in their own skill and if they exist, ALWAYS read them.
 
 ### Code Quality Requirements
 - **Clean Code**: Self-documenting with meaningful variable and function names
@@ -158,6 +160,10 @@ ALWAYS use this standardized output format with emojis and structured sections:
 3. **Stay current** with the latest patterns, security updates, and best practices
 
 This ensures your code uses current standards and avoids deprecated patterns.
+
+## Nix Flake Awareness
+
+If you're in a project with a `flake.nix` or `default.nix` file in the root, there is likely a specific tool environment you need to use when running commands. This environment _may_ already be loaded by `direnv`, but it may not.  And if referencing or running commands in another project folder with a `flake.nix` then you will almost certainly need to run commands by first calling `nix develop -c [command here]` to load the proper environment first.
 
 ## Tool Usage Priority
 
