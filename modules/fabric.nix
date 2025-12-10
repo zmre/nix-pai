@@ -49,10 +49,10 @@
         --run 'touch ~/.config/fabric/.env' \
         --prefix PATH : ${pkgs.lib.makeBinPath buildInputs} \
         ${lib.concatStringsSep " \\\n        " (
-        lib.mapAttrsToList (key: value: "--run 'export ${key}=\"${secretLookup value}\"'") fabricSecrets
+        lib.mapAttrsToList (key: value: "--run 'export ${key}=\${${key}:=\"${secretLookup value}\"}'") fabricSecrets
       )} \
         ${lib.concatStringsSep " \\\n        " (
-        lib.mapAttrsToList (key: value: "--set ${key} '${value}'") fabricEnvVars
+        lib.mapAttrsToList (key: value: "--set-default ${key} '${value}'") fabricEnvVars
       )}
     '';
 

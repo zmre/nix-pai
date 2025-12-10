@@ -79,8 +79,8 @@ in {
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
           --set CODEX_MANAGED_CONFIG_PATH $out/codex/managed_config.toml \
-          --set OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
-          --set OLLAMA_API_URL "http://${perSystemConfig.pai.ollamaServer}"
+          --set-default OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
+          --set-default OLLAMA_API_URL "http://${perSystemConfig.pai.ollamaServer}"
       '';
 
       pai = pkgs.stdenvNoCC.mkDerivation {
@@ -135,7 +135,7 @@ in {
               --set PAI_DIR "$out" \
               --set DA "${perSystemConfig.pai.assistantName}" \
               --set DA_COLOR "${perSystemConfig.pai.assistantColor}" \
-              --set ENGINEER_NAME "${perSystemConfig.pai.userFullName}" \
+              --set-default ENGINEER_NAME "${perSystemConfig.pai.userFullName}" \
               --prefix PATH : "$out/bin" \
               --add-flags "--settings $out/claude/settings.json --mcp-config $out/claude/mcp.json --plugin-dir $out/claude"
 
