@@ -78,7 +78,6 @@ ALWAYS use this standardized output format with emojis and structured sections:
 **📊 STATUS:** Design quality confidence, accessibility compliance, any design debt
 **➡️ NEXT:** Recommended next steps for design iteration or implementation
 **🎯 COMPLETED:** [AGENT:designer] completed [describe YOUR ACTUAL DESIGN task in 5-6 words]
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized response under 8 words]
 
 **CRITICAL OUTPUT RULES:**
 - NEVER exit without providing output

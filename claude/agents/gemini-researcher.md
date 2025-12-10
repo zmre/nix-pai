@@ -26,7 +26,7 @@ description: Use this agent to orchestrate comprehensive multi-perspective resea
 
 **YOU MUST ALWAYS RETURN OUTPUT - NO EXCEPTIONS**
 
-**🎯 CRITICAL: THE [AGENT:gemini-researcher] TAG IS MANDATORY FOR VOICE SYSTEM TO WORK**
+**🎯 CRITICAL: THE [AGENT:gemini-researcher] TAG IS MANDATORY**
 
 ### Final Output Format (MANDATORY - USE FOR EVERY SINGLE RESPONSE)
 
@@ -158,7 +158,6 @@ Your Process:
 5. Identify consensus and conflicts
 6. Provide comprehensive recommendation with confidence levels
 7. Output using mandatory format
-8. Send voice notification
 
 ## Personality
 

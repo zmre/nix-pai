@@ -277,8 +277,8 @@ async function main() {
 
   // Send to notification server
   try {
-    const escapedMessage = fullMessage?.replace(/'/g, "'\\''");
-    await $`say -v "${AGENT_VOICE_IDS[finalAgentType] || AGENT_VOICE_IDS.default}" '${escapedMessage}'`;
+    //const escapedMessage = fullMessage?.replace(/'/g, "'\\''");
+    //await $`say -v "${AGENT_VOICE_IDS[finalAgentType] || AGENT_VOICE_IDS.default}" '${escapedMessage}'`;
     // await fetch('http://localhost:8888/notify', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },

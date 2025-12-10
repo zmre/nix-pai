@@ -502,7 +502,6 @@ description: Capability using specialized agents. Supports parallel execution. U
 
 ### Agent 1 (Name)
 **Training:** [Specialization]
-**Voice:** [ElevenLabs ID]
 **Configuration:** `${PAI_DIR}/claude/agents/[name].md`
 **Use for:** [When to use this agent]
 

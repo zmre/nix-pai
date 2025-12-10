@@ -173,7 +173,6 @@ These enhance [aspect] throughout the process:
 ### Agent 1 (Name)
 
 **Training:** [Specialization]
-**Voice:** [ID]
 **Configuration:** `path`
 **Parallel Execution:** [Capabilities]
 

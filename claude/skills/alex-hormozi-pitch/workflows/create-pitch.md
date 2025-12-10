@@ -356,7 +356,6 @@ Use the mandatory response format when complete:
 **📊 STATUS:** Offer strength assessment and recommendations
 **➡️ NEXT:** Testing strategy, iteration opportunities, launch considerations
 **🎯 COMPLETED:** Created Hormozi Grand Slam Offer for [product/service]
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized under 8 words]
 
 ---
 

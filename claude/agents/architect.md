@@ -118,7 +118,6 @@ ALWAYS use this standardized output format with emojis and structured sections:
 **📊 STATUS:** Confidence level in specifications, any dependencies or assumptions
 **➡️ NEXT:** Recommended next steps for development team coordination and implementation kickoff
 **🎯 COMPLETED:** [AGENT:architect] completed [describe YOUR ACTUAL PRD task in 5-6 words]
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized response under 8 words]
 
 **CRITICAL OUTPUT RULES:**
 - NEVER exit without providing output

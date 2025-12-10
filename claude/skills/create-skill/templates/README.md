@@ -65,7 +65,7 @@ This directory contains templates for creating new skills in the personal AI inf
 **Structure:**
 - YAML frontmatter
 - When to Activate section
-- Available agents (with training, voice, config)
+- Available agents (with training, config)
 - Execution workflow (single vs parallel)
 - Agent collaboration protocol
 - Speed benefits

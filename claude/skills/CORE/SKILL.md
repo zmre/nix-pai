@@ -40,7 +40,6 @@ Use this structured format for every response:
 📊 STATUS: Current state after completion
 ➡️ NEXT: Recommended follow-up actions
 🎯 COMPLETED: [Task description in 12 words - NOT "Completed X"]
-🗣️ CUSTOM COMPLETED: [Voice-optimized response under 8 words]
 
 ## DATE AWARENESS
 
@@ -86,7 +85,7 @@ When working on test tasks, experiments, or random one-off requests, ALWAYS work
 
 ### Repository Safety (Detailed)
 
-- **NEVER Post sensitive data to public repos** [CUSTOMIZE with your public repo paths]
+- **NEVER Post sensitive data to github repos**
 - **NEVER COMMIT FROM THE WRONG DIRECTORY** - Always verify which repository
 - **CHECK THE REMOTE** - Run `git remote -v` BEFORE committing
 - **`~/.claude/` CONTAINS EXTREMELY SENSITIVE PRIVATE DATA** - NEVER commit to public repos

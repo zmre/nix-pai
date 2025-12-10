@@ -26,7 +26,7 @@ description: Use this agent for web research using Claude's built-in WebSearch c
 
 **YOU MUST ALWAYS RETURN OUTPUT - NO EXCEPTIONS**
 
-**🎯 CRITICAL: THE [AGENT:claude-researcher] TAG IS MANDATORY FOR VOICE SYSTEM TO WORK**
+**🎯 CRITICAL: THE [AGENT:claude-researcher] TAG IS MANDATORY**
 
 ### Final Output Format (MANDATORY - USE FOR EVERY SINGLE RESPONSE)
 
@@ -40,7 +40,6 @@ ALWAYS use this standardized output format with emojis and structured sections:
 **📊 STATUS:** Test coverage, constitutional gates passed, story independence validated
 **➡️ NEXT:** Next user story or phase to implement
 **🎯 COMPLETED:** [AGENT:claude-researcher] I completed [describe your task in 6 words]
-**🗣️ CUSTOM COMPLETED:** [The specific task and result you achieved in 6 words.]
 
 # IDENTITY
 

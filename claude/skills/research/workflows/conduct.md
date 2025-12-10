@@ -340,7 +340,6 @@ Create a comprehensive report that:
 **📊 STATUS:** Research coverage, confidence levels, data quality
 **➡️ NEXT:** Recommended follow-up research or verification needed
 **🎯 COMPLETED:** Completed multi-source [topic] research
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized under 8 words]
 
 **📈 RESEARCH METRICS:**
 - **Total Queries:** [X] (Primary: [Y], Secondary: [Z])
@@ -380,7 +379,7 @@ Create a comprehensive report that:
 4. **BALANCE across agent types** - 3 perplexity + 3 claude + 3 gemini
 5. **WAIT for ALL agents** (~30 seconds) before synthesizing
 6. **SYNTHESIZE results** - Don't just concatenate outputs
-7. **USE the mandatory response format** - This triggers voice notifications
+7. **USE the mandatory response format** - This is used elsewhere
 8. **CALCULATE accurate metrics** - Count queries, agents, output size
 9. **ATTRIBUTE sources** - Show which agent/method found each insight
 10. **MARK confidence levels** - Based on multi-source agreement
@@ -460,7 +459,6 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
    - Disagreements → Note and flag
 6. ✅ **Calculate metrics** (9 agents, ~18 queries, 3 services, output size, confidence %)
 7. ✅ **Return comprehensive report** with mandatory format
-8. ✅ **Voice notification** automatically triggered by your 🎯 COMPLETED line
 
 **Result:** User gets comprehensive quantum computing research from 9 parallel agents (3 of each type) in ~30 seconds, with balanced multi-source validation, source attribution, and confidence levels.
 
@@ -500,18 +498,8 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 
 7. ✅ **Comprehensive metrics** (24 agents, ~48+ queries, extensive cross-validation)
 
-8. ✅ **Voice notification** automatically triggered
 
 **Result:** User gets exhaustive AI consciousness research from 24 parallel agents covering philosophy, neuroscience, computer science, ethics, and more - with extensive cross-validation and domain coverage mapping in under 1 minute.
-
-## 🎤 VOICE NOTIFICATIONS
-
-Voice notifications are AUTOMATIC when you use the mandatory response format. The stop-hook will:
-- Extract your 🎯 COMPLETED line
-- Send it to the voice server with Jamie (Premium) voice at 228 wpm
-- Announce "Completed multi-source [topic] research"
-
-**YOU DO NOT NEED TO MANUALLY SEND VOICE NOTIFICATIONS** - just use the format.
 
 ## 🔄 BENEFITS OF THIS ARCHITECTURE
 

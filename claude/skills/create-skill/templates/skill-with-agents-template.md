@@ -16,7 +16,6 @@ description: Capability using specialized agents. Supports parallel execution of
 
 ### Agent 1 Name (Role)
 **Training:** [Specialization and methodology]
-**Voice:** [ElevenLabs Voice ID]
 **Configuration:** `${PAI_DIR}/claude/agents/[agent-name].md`
 **Parallel Execution:** Can launch up to 10 agents for [work type]
 
@@ -32,7 +31,6 @@ description: Capability using specialized agents. Supports parallel execution of
 
 ### Agent 2 Name (Role)
 **Training:** [Specialization and methodology]
-**Voice:** [ElevenLabs Voice ID]
 **Configuration:** `${PAI_DIR}/claude/agents/[agent-name].md`
 **Parallel Execution:** Can launch up to 10 agents for [work type]
 
@@ -128,7 +126,6 @@ Launch multiple agents in SINGLE message with multiple Task tool calls:
 
 ### Communication Standards
 
-- **Voice notifications:** Agents use ElevenLabs voices for completion
 - **Progress updates:** Every 60-90 seconds during active work
 - **Explicit uncertainty:** Use [NEEDS CLARIFICATION] markers
 - **Quality validation:** Check standards before proceeding

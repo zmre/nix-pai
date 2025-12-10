@@ -55,8 +55,8 @@ interface TranscriptEntry {
  */
 async function sendNotification(payload: NotificationPayload): Promise<void> {
   try {
-    const escapedMessage = payload.message.replace(/'/g, "'\\''");
-    await $`say '${escapedMessage}'`;
+    //const escapedMessage = payload.message.replace(/'/g, "'\\''");
+    //await $`say '${escapedMessage}'`;
     // await fetch('http://localhost:8888/notify', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
