@@ -78,7 +78,7 @@ in {
           --prefix PATH : "$out/bin" \
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
-          --set CODEX_MANAGED_CONFIG_PATH $out/codex \
+          --set CODEX_MANAGED_CONFIG_PATH $out/codex/managed_config.toml \
           --set OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
           --set OLLAMA_API_URL "http://${perSystemConfig.pai.ollamaServer}"
       '';
