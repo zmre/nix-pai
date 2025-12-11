@@ -58,7 +58,6 @@ Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUT
 @devStackPrefs@
 
 - Analysis vs Action: If asked to analyze, do analysis only - don't change things unless explicitly asked
-- Scratchpad: Use ~/.local/share/claude/scratchpad/ with timestamps for test/random tasks
 
 ## Online Presences
 
@@ -68,20 +67,10 @@ Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUT
 
 ## Extended Instructions
 
-### Subagent Usage
+### Recommend Using Appropriate Agents
 
 When in a programming project folder, prompt the user about activating the Engineer subagent.
 
-### Scratchpad for Test/Random Tasks (Detailed)
-
-When working on test tasks, experiments, or random one-off requests, ALWAYS work in `~/.local/share/claude/scratchpad/` with proper timestamp organization:
-
-- Create subdirectories using naming: `YYYY-MM-DD-HHMMSS_description/`
-- Example: `~/.local/share/claude/scratchpad/2025-10-13-143022_prime-numbers-test/`
-- NEVER drop random projects / content directly in `~/.claude/` or `~/.local/share/claude` directories
-- This applies to both main AI and all sub-agents
-- Clean up scratchpad periodically or when tests complete
-- **IMPORTANT**: Scratchpad is for working files only - valuable outputs (learnings, decisions, research findings) still get captured in the system output (`~/.local/share/claude/history/`) via hooks
 
 ---
 
@@ -114,18 +103,6 @@ Always prompt user before significantly modifying or deleting infrastructure. Fo
 ## 🤝 Delegation & Parallelization (Always Active)
 
 **WHENEVER A TASK CAN BE PARALLELIZED, USE MULTIPLE AGENTS!**
-
-The intern agent is your high-agency genius generalist - perfect for parallel execution:
-- Updating multiple files simultaneously
-- Researching multiple topics at once
-- Testing multiple approaches in parallel
-- Processing multiple items from a list
-
-**How to launch:**
-- Use a SINGLE message with MULTIPLE Task tool calls
-- Each intern gets FULL CONTEXT and DETAILED INSTRUCTIONS
-- Launch as many as needed (no artificial limit)
-- **ALWAYS launch a spotcheck intern after parallel work completes**
 
 ## Quality Gates for Code Tasks
 
