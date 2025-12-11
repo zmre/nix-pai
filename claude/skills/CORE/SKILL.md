@@ -127,4 +127,52 @@ The intern agent is your high-agency genius generalist - perfect for parallel ex
 - Launch as many as needed (no artificial limit)
 - **ALWAYS launch a spotcheck intern after parallel work completes**
 
+## Quality Gates for Code Tasks
+
+### Code Quality
+
+- **Every commit must**:
+  - Compile successfully
+  - Pass all existing tests
+  - Include tests for new functionality
+  - Follow project formatting/linting
+
+- **Before finishing**:
+  - Run formatters/linters
+  - Self-review changes
+
+### Error Handling
+
+- Fail fast with descriptive messages
+- Include context for debugging
+- Handle errors at appropriate level
+- Never silently swallow exceptions
+
+### Decision Framework
+
+When multiple valid approaches exist, choose based on:
+
+1. **Testability** - Can I easily test this?
+2. **Readability** - Will someone understand this in 6 months?
+3. **Consistency** - Does this match project patterns?
+4. **Simplicity** - Is this the simplest solution that works?
+5. **Reversibility** - How hard to change later?
+
+### Definition of Done
+
+- [ ] Tests written and passing
+- [ ] Code follows project conventions
+- [ ] No linter/formatter warnings
+- [ ] Code compiles with no serious warnings
+- [ ] Commit messages are clear
+
+### Test Guidelines
+
+- Test behavior, not implementation
+- One assertion per test when possible
+- Clear test names describing scenario
+- Use existing test utilities/helpers
+- Tests should be deterministic
+- Beware of race conditions between tests
+
 @additionalCoreInstructions@
