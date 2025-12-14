@@ -14,11 +14,6 @@ model_name=$(echo "$input" | jq -r '.model.display_name')
 # Get directory name
 dir_name=$(basename "$current_dir")
 
-# Cache file and lock file for ccusage data
-CACHE_FILE="/tmp/.claude_ccusage_cache"
-LOCK_FILE="/tmp/.claude_ccusage.lock"
-CACHE_AGE=30   # 30 seconds for more real-time updates
-
 # Count items from specified directories
 claude_dir="@paiBasePath@/claude"
 commands_count=0
@@ -54,83 +49,6 @@ fi
 if [ -d "$fabric_patterns_dir" ]; then
     # Count immediate subdirectories only
     fabric_count=$(find "$fabric_patterns_dir" -maxdepth 1 -type d -not -path "$fabric_patterns_dir" 2>/dev/null | wc -l | tr -d ' ')
-fi
-
-# Get cached ccusage data - SAFE VERSION without background processes
-daily_tokens=""
-daily_cost=""
-
-# Check if cache exists and load it
-if [ -f "$CACHE_FILE" ]; then
-    # Always load cache data first (if it exists)
-    source "$CACHE_FILE"
-fi
-
-# If cache is stale, missing, or we have no data, update it SYNCHRONOUSLY with timeout
-cache_needs_update=false
-if [ ! -f "$CACHE_FILE" ] || [ -z "$daily_tokens" ]; then
-    cache_needs_update=true
-elif [ -f "$CACHE_FILE" ]; then
-    cache_age=$(($(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || echo 0)))
-    if [ $cache_age -ge $CACHE_AGE ]; then
-        cache_needs_update=true
-    fi
-fi
-
-if [ "$cache_needs_update" = true ]; then
-    # Try to acquire lock (non-blocking)
-    if mkdir "$LOCK_FILE" 2>/dev/null; then
-        # We got the lock - update cache with timeout
-        if command -v bunx >/dev/null 2>&1; then
-            # Run ccusage with a timeout (5 seconds for faster updates)
-            # Check if gtimeout is available (macOS), otherwise try timeout (Linux)
-            if command -v gtimeout >/dev/null 2>&1; then
-                ccusage_output=$(gtimeout 5 bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
-            elif command -v timeout >/dev/null 2>&1; then
-                ccusage_output=$(timeout 5 bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
-            else
-                # Fallback without timeout (but faster than before)
-                ccusage_output=$(bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
-            fi
-
-            if [ -n "$ccusage_output" ]; then
-                # Extract input/output tokens, removing commas and ellipsis
-                daily_input=$(echo "$ccusage_output" | awk -F'│' '{print $4}' | sed 's/[^0-9]//g' | head -c 10)
-                daily_output=$(echo "$ccusage_output" | awk -F'│' '{print $5}' | sed 's/[^0-9]//g' | head -c 10)
-                # Extract cost, keep the dollar sign
-                daily_cost=$(echo "$ccusage_output" | awk -F'│' '{print $9}' | sed 's/^ *//;s/ *$//')
-
-                if [ -n "$daily_input" ] && [ -n "$daily_output" ]; then
-                    daily_total=$((daily_input + daily_output))
-                    daily_tokens=$(printf "%'d" "$daily_total" 2>/dev/null || echo "$daily_total")
-
-                    # Write to cache file (properly escape dollar sign)
-                    echo "daily_tokens=\"$daily_tokens\"" > "$CACHE_FILE"
-                    # Use printf to properly escape the dollar sign in the cost
-                    printf "daily_cost=\"%s\"\n" "${daily_cost//$/\\$}" >> "$CACHE_FILE"
-                    # Add timestamp for debugging
-                    echo "cache_updated=\"$(date)\"" >> "$CACHE_FILE"
-                fi
-            fi
-        fi
-
-        # Always remove lock when done
-        rmdir "$LOCK_FILE" 2>/dev/null
-    else
-        # Someone else is updating - check if lock is stale (older than 30 seconds)
-        if [ -d "$LOCK_FILE" ]; then
-            lock_age=$(($(date +%s) - $(stat -f%m "$LOCK_FILE" 2>/dev/null || echo 0)))
-            if [ $lock_age -gt 30 ]; then
-                # Stale lock - remove it and try again
-                rmdir "$LOCK_FILE" 2>/dev/null
-            fi
-        fi
-
-        # Just use cached data if available
-        if [ -f "$CACHE_FILE" ]; then
-            source "$CACHE_FILE"
-        fi
-    fi
 fi
 
 # Tokyo Night Storm Color Scheme
@@ -213,11 +131,3 @@ printf "${DA_DISPLAY_COLOR}${DA_NAME}${RESET}${LINE1_PRIMARY} here, running on $
 # LINE 2 - BLUE theme with MCP names
 printf "${LINE2_PRIMARY}🔌 MCPs${RESET}${LINE2_PRIMARY}${SEPARATOR_COLOR}: ${RESET}${mcp_names_formatted}${RESET}\n"
 
-# LINE 3 - GREEN theme with tokens and cost (show cached or N/A)
-# If we have cached data but it's empty, still show N/A
-tokens_display="${daily_tokens:-N/A}"
-cost_display="${daily_cost:-N/A}"
-if [ -z "$daily_tokens" ]; then tokens_display="N/A"; fi
-if [ -z "$daily_cost" ]; then cost_display="N/A"; fi
-
-printf "${LINE3_PRIMARY}💎 Total Tokens${RESET}${LINE3_PRIMARY}${SEPARATOR_COLOR}: ${RESET}${LINE3_ACCENT}${tokens_display}${RESET}${LINE3_PRIMARY}  Total Cost${RESET}${LINE3_PRIMARY}${SEPARATOR_COLOR}: ${RESET}${COST_COLOR}${cost_display}${RESET}\n"
