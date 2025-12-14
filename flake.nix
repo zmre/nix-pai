@@ -30,8 +30,6 @@
 
       flake.flakeModules.default = paiModule;
 
-      # TODO: provide optional default config so it can be tested without
-      # customizing and building another flake first
       perSystem = {config, ...}: {
         # imports = [./modules/options.nix];
         packages.default = config.packages.pai;

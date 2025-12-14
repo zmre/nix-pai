@@ -84,12 +84,6 @@
             default = [];
             description = "https://code.claude.com/docs/en/iam#tool-specific-permission-rules";
           };
-          # TODO:
-          # extraEnv = lib.mkOption {
-          #   type = lib.types.attrsOf lib.types.str;
-          #   default = {};
-          #   description = "";
-          # };
           outputStyle = lib.mkOption {
             type = lib.types.enum ["default" "explanatory" "learning"];
             default = "default";

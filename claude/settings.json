@@ -12,6 +12,7 @@
     "allow": [
       @permissionsAllow@
       "Skill(:*)",
+      "mcp__Ref",
       "Bash(npm:*)",
       "Bash(git:*)",
       "Bash(nix build:*)",
@@ -59,7 +60,6 @@
     ],
     "ask": [
       @permissionsAsk@
-      "mcp__Ref",
       "Bash(sudo:*)",
       "Bash(git push:*)",
       "Read(./.env)"
