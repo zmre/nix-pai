@@ -25,10 +25,13 @@
       "Bash(bun:*)",
       "Bash(cargo:*)",
       "Bash(rustc:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
       "Bash(fabric:*)",
       "Bash(gemini:*)",
       "Bash(codex:*)",
       "Bash(make:*)",
+      "Bash(ls:*)",
       "Bash(configure:*)",
       "Bash(build:*)",
       "Bash(jq:*)",
@@ -38,7 +41,10 @@
       "Bash(pip:*)",
       "Bash(magick:*)",
       "Bash(uv:*)",
-      "Webfetch(*)",
+      "Bash(./target/release/:*)",
+      "Bash(./target/debug/:*)",
+      "Webfetch",
+      "WebFetch(domain:docs.rs)",
       "Read(./**)",
       "Read(/tmp/**)",
       "Write(./*)",
@@ -125,6 +131,16 @@
           {
             "type": "command",
             "command": "@paiBasePath@/claude/hooks/capture-all-events.ts --event-type Stop"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "@paiBasePath@/claude/hooks/permission-prompt-hook.ts"
           }
         ]
       }

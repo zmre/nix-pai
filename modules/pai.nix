@@ -63,10 +63,11 @@ in {
         // perSystemConfig.pai.extraSecrets;
 
       # function returning the command for fetching secrets
+      # Security: secret names are quoted to prevent shell injection
       secretLookup = secretname:
         if pkgs.stdenv.isLinux
-        then ''$(secret-tool lookup api ${secretname} 2>/dev/null | tr -d \"\n\")''
-        else ''$(security find-generic-password -l ${secretname} -g -w 2>/dev/null |tr -d \"\n\")'';
+        then ''$(secret-tool lookup api '${secretname}' 2>/dev/null | tr -d \"\n\")''
+        else ''$(security find-generic-password -l '${secretname}' -g -w 2>/dev/null | tr -d \"\n\")'';
 
       # needs to be rw, so this fails: --set CODEX_HOME $out/codex \
       mkWrapSecret = binary: ''
@@ -259,7 +260,7 @@ in {
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @permissionsAllow@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsAllow}' \
               --replace-quiet @permissionsAsk@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsAsk}' \
-              --replace-quiet @permissionsDeny@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsAllow}'
+              --replace-quiet @permissionsDeny@ '${lib.strings.concatMapStrings (x: ''"${x}", '') perSystemConfig.pai.extraClaudeSettings.permissionsDeny}'
 
           substituteInPlace $out/gemini/settings-defaults.json \
               --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
