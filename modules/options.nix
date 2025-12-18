@@ -47,11 +47,6 @@
             default = true;
             description = "OpenAI codex included and given an environment";
           };
-          enableFabric = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Fabric prompt library";
-          };
           enableGemini = lib.mkOption {
             type = lib.types.bool;
             default = true;
@@ -61,6 +56,32 @@
             type = lib.types.bool;
             default = true;
             description = "OpenCode included and given an environment";
+          };
+        };
+        fabric = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Enable fabric CLI tool";
+          };
+          includePatterns = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Include fabric patterns in the build for native execution.
+              When true (default), patterns are bundled from patternsSource.
+              When false, uses CLI fallback (smaller build, patterns via fabric -p).
+            '';
+          };
+          patternsSource = lib.mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+            description = ''
+              Path to fabric patterns source. When null and includePatterns is true,
+              uses patterns from the fabric-ai package.
+              Can be overridden with a flake input, e.g., inputs.fabric-patterns
+              where fabric-patterns.url = "github:danielmiessler/fabric";
+            '';
           };
         };
         extraClaudeSettings = {

@@ -33,7 +33,7 @@ in {
         ++ lib.optionals (perSystemConfig.pai.otherTools.enableCodex) [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.codex
         ]
-        ++ lib.optionals (perSystemConfig.pai.otherTools.enableFabric) [fabricWrapped.package]
+        ++ lib.optionals (perSystemConfig.pai.fabric.enable) [fabricWrapped.package]
         ++ lib.optionals (perSystemConfig.pai.otherTools.enableGemini) [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli
         ]
@@ -96,6 +96,7 @@ in {
           #pkgs.makeBinaryWrapper
           pkgs.makeWrapper
           pkgs.gawk
+          pkgs.rsync
         ];
         meta.mainProgram = perSystemConfig.pai.commandName;
         buildPhase = ''
@@ -156,8 +157,52 @@ in {
                 --prefix PATH : "$out/bin"
           ''}
 
-          # Copy in all the settings files
-          cp -R "${localsrc}/claude" "$out/"
+          # Copy in all the settings files, excluding fabric patterns (handled separately)
+          # Use --chmod=u+w to ensure all files are writable (nix store sources are read-only)
+          mkdir -p $out/claude
+          rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' "${localsrc}/claude/" "$out/claude/"
+
+          # Fabric patterns: copy if enabled, using patternsSource or fabric-ai package
+          ${lib.optionalString perSystemConfig.pai.fabric.includePatterns ''
+            PATTERNS_SRC="${
+              if perSystemConfig.pai.fabric.patternsSource != null
+              then "${perSystemConfig.pai.fabric.patternsSource}/patterns"
+              else "${pkgs.fabric-ai.src}/data/patterns"
+            }"
+            mkdir -p $out/claude/skills/fabric/tools
+            cp -R "$PATTERNS_SRC" $out/claude/skills/fabric/tools/
+
+            # Generate dynamic patterns list for SKILL.md
+            PATTERNS_LIST=""
+            for pattern_dir in $out/claude/skills/fabric/tools/patterns/*/; do
+              pattern_name=$(basename "$pattern_dir")
+              system_file="$pattern_dir/system.md"
+              if [ -f "$system_file" ]; then
+                # Extract first meaningful line after "# IDENTITY" or use pattern name
+                description=$(awk '
+                  /^# IDENTITY/ { found=1; next }
+                  found && /^[^#]/ && NF > 0 {
+                    gsub(/^[ \t]+|[ \t]+$/, "")
+                    print
+                    exit
+                  }
+                ' "$system_file" | head -c 100)
+                if [ -z "$description" ]; then
+                  description="Apply $pattern_name pattern"
+                fi
+                PATTERNS_LIST="$PATTERNS_LIST- \`$pattern_name\` - $description
+            "
+              fi
+            done
+            # Write patterns list to a temp file for substitution
+            echo "$PATTERNS_LIST" > $out/claude/skills/fabric/.patterns-list.txt
+          ''}
+
+          # If patterns not included, create empty patterns list
+          ${lib.optionalString (!perSystemConfig.pai.fabric.includePatterns) ''
+            echo "Patterns not bundled. Use \`fabric -l\` to list available patterns, or \`fabric -p pattern_name\` to execute." > $out/claude/skills/fabric/.patterns-list.txt
+          ''}
+
           mkdir -p "$out/codex"
           cp  "${localsrc}/codex/managed_config.toml" "$out/codex"
           mkdir -p "$out/gemini"
@@ -267,11 +312,13 @@ in {
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/codex/managed_config.toml \
               --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/architect.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/statusline-command.sh \
               --replace-quiet @paiBasePath@ "$out"
+          substituteInPlace $out/opencode/config.json \
+              --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
+              --replace-quiet @paiBasePath@ "$out"
+
+          # Hook-specific substitutions
           substituteInPlace $out/claude/hooks/capture-all-events.ts \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"
@@ -281,24 +328,8 @@ in {
           substituteInPlace $out/claude/hooks/context-compression-hook.ts \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/claude-researcher.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/engineer.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/gemini-researcher.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/pentester.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/designer.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/agents/researcher.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
+
+          # CORE skill and GEMINI.md have additional user-specific variables
           substituteInPlace $out/gemini/GEMINI.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @keyContacts@ '${perSystemConfig.pai.keyContacts}' \
@@ -317,22 +348,31 @@ in {
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
               --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/skills/alex-hormozi-pitch/workflows/create-pitch.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/skills/create-skill/SKILL.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}'
-          substituteInPlace $out/claude/skills/agent-observability/SKILL.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/skills/agent-observability/workflows/start.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/skills/research/workflows/conduct.md \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}'
-          substituteInPlace $out/opencode/config.json \
-              --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
-              --replace-quiet @paiBasePath@ "$out"
+
+          # Fabric patterns list substitution (generated earlier in build)
+          if [ -f "$out/claude/skills/fabric/.patterns-list.txt" ]; then
+              PATTERNS_CONTENT=$(cat "$out/claude/skills/fabric/.patterns-list.txt")
+              # Use awk for multi-line substitution since substituteInPlace doesn't handle it well
+              awk -v patterns="$PATTERNS_CONTENT" '{gsub(/@fabricPatternsList@/, patterns); print}' \
+                  "$out/claude/skills/fabric/SKILL.md" > "$out/claude/skills/fabric/SKILL.md.tmp"
+              mv "$out/claude/skills/fabric/SKILL.md.tmp" "$out/claude/skills/fabric/SKILL.md"
+              rm -f "$out/claude/skills/fabric/.patterns-list.txt"
+          fi
+
+          # Generic substitution for all *.md files in skills (except CORE which is handled above)
+          # This allows parent modules to add skills with @assistantName@ and @paiBasePath@ placeholders
+          find $out/claude/skills -name "*.md" -type f ! -path "*/CORE/*" | while read -r mdfile; do
+              substituteInPlace "$mdfile" \
+                  --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+                  --replace-quiet @paiBasePath@ "$out"
+          done
+
+          # Generic substitution for all *.md files in agents
+          find $out/claude/agents -name "*.md" -type f | while read -r mdfile; do
+              substituteInPlace "$mdfile" \
+                  --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+                  --replace-quiet @paiBasePath@ "$out"
+          done
 
         '';
       };

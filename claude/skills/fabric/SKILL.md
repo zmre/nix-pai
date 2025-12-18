@@ -3,18 +3,19 @@ name: fabric
 description: Native Fabric pattern execution for Claude Code. USE WHEN processing content with Fabric patterns (extract_wisdom, summarize, analyze_claims, threat modeling, etc.). Patterns run natively in Claude's context - no CLI spawning needed. Only use fabric CLI for YouTube transcripts (-y) or pattern updates (-U).
 ---
 
-# Fabric Skill - Native Pattern Execution
+# Fabric Skill - Pattern Execution
 
 ## The Key Insight
 
-**Fabric patterns are just markdown prompts.** Instead of spawning `fabric -p pattern_name` for every task, Claude Code reads and applies patterns directly from `tools/patterns/`. This gives you:
+**Fabric patterns are just markdown prompts.** Instead of spawning `fabric -p pattern_name` for every task, @assistantName@ can read and apply patterns directly. This gives you:
 
 - **Your Claude subscription's full power** - Opus/Sonnet intelligence, not Fabric's default model
 - **Full conversation context** - Patterns work with your entire session
 - **No CLI overhead** - Faster execution, no process spawning
-- **Same 248 patterns** - All the patterns you know, just applied natively
 
-## When to Use Native Patterns (Default)
+## How to Execute Patterns
+
+### Native Execution (When Patterns Bundled)
 
 For any pattern-based processing:
 1. Read `tools/patterns/{pattern_name}/system.md`
@@ -32,16 +33,23 @@ User: "Create a threat model for this API"
 → Read tools/patterns/create_threat_model/system.md
 → Apply pattern to the API description
 → Return threat model
-
-User: "Summarize this article"
-→ Read tools/patterns/summarize/system.md
-→ Apply pattern to article
-→ Return summary
 ```
 
-## When to Still Use Fabric CLI
+### CLI Fallback (When Patterns Not Bundled)
 
-Only use the `fabric` command for operations that require external services:
+When patterns aren't bundled locally, use the fabric CLI:
+
+```bash
+# Pipe content through fabric with a pattern
+echo "content to process" | fabric -p pattern_name
+
+# Or read from a file
+cat article.txt | fabric -p summarize
+```
+
+## Always Use CLI For
+
+These operations require external services regardless of bundled patterns:
 
 | Operation | Command | Why CLI Needed |
 |-----------|---------|----------------|
@@ -49,66 +57,9 @@ Only use the `fabric` command for operations that require external services:
 | Update patterns | `fabric -U` | Pulls from GitHub |
 | List patterns | `fabric -l` | Quick reference |
 
-**For everything else, use native patterns.**
+## Available Patterns
 
-## Pattern Categories (248 Total)
-
-### Threat Modeling & Security
-- `create_threat_model` - General threat modeling
-- `create_stride_threat_model` - STRIDE methodology
-- `create_threat_scenarios` - Threat scenario generation
-- `analyze_threat_report` - Threat report analysis
-- `create_sigma_rules` - SIGMA detection rules
-- `write_nuclei_template_rule` - Nuclei scanner templates
-- `write_semgrep_rule` - Semgrep static analysis rules
-
-### Summarization
-- `summarize` - General summarization
-- `create_5_sentence_summary` - Ultra-concise summary
-- `summarize_paper` - Academic paper summary
-- `summarize_meeting` - Meeting notes
-- `youtube_summary` - Video summary
-
-### Wisdom Extraction
-- `extract_wisdom` - General wisdom extraction
-- `extract_insights` - Key insights
-- `extract_main_idea` - Core message
-- `extract_recommendations` - Actionable recommendations
-- `extract_alpha` - High-value insights
-
-### Analysis
-- `analyze_claims` - Claim verification
-- `analyze_code` - Code analysis
-- `analyze_malware` - Malware analysis
-- `analyze_paper` - Academic paper analysis
-- `analyze_debate` - Debate analysis
-
-### Content Creation
-- `create_prd` - Product Requirements Document
-- `create_design_document` - Design documentation
-- `create_mermaid_visualization` - Mermaid diagrams
-- `write_essay` - Essay writing
-- `create_report_finding` - Security findings
-
-### Improvement
-- `improve_writing` - Writing enhancement
-- `improve_prompt` - Prompt engineering
-- `review_code` - Code review
-- `humanize` - Humanize AI text
-
-## Updating Patterns
-
-Run the update script to sync latest patterns from upstream:
-
-```bash
-./tools/update-patterns.sh
-```
-
-This will:
-1. Run `fabric -U` to fetch upstream updates
-2. Sync patterns to `tools/patterns/`
-
-**Requirements:** `fabric` CLI must be installed (`go install github.com/danielmiessler/fabric@latest`)
+@fabricPatternsList@
 
 ## Pattern Structure
 
@@ -128,11 +79,16 @@ Each pattern directory contains:
 
 **The patterns are identical.** The difference is execution context and model power.
 
-## Full Pattern List
+## Configuration
 
-See all available patterns:
-```bash
-ls tools/patterns/
+To disable bundled patterns (smaller build, use CLI fallback):
+```nix
+pai.fabric.includePatterns = false;
 ```
 
-Or browse: `tools/patterns/{pattern_name}/system.md`
+To use a custom patterns source:
+```nix
+inputs.fabric-patterns.url = "github:danielmiessler/fabric";
+inputs.fabric-patterns.flake = false;
+pai.fabric.patternsSource = inputs.fabric-patterns;
+```
