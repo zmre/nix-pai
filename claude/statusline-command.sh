@@ -52,21 +52,22 @@ if [ -d "$fabric_patterns_dir" ]; then
 fi
 
 # Tokyo Night Storm Color Scheme
-BACKGROUND='\033[48;2;36;40;59m'
-BRIGHT_PURPLE='\033[38;2;187;154;247m'
-BRIGHT_BLUE='\033[38;2;122;162;247m'
-DARK_BLUE='\033[38;2;100;140;200m'
-BRIGHT_GREEN='\033[38;2;158;206;106m'
-DARK_GREEN='\033[38;2;130;170;90m'
-BRIGHT_ORANGE='\033[38;2;255;158;100m'
-BRIGHT_RED='\033[38;2;247;118;142m'
-BRIGHT_CYAN='\033[38;2;125;207;255m'
-BRIGHT_MAGENTA='\033[38;2;187;154;247m'
-BRIGHT_YELLOW='\033[38;2;224;175;104m'
+# Using $'...' syntax so escape sequences become actual ESC characters
+BACKGROUND=$'\033[48;2;36;40;59m'
+BRIGHT_PURPLE=$'\033[38;2;187;154;247m'
+BRIGHT_BLUE=$'\033[38;2;122;162;247m'
+DARK_BLUE=$'\033[38;2;100;140;200m'
+BRIGHT_GREEN=$'\033[38;2;158;206;106m'
+DARK_GREEN=$'\033[38;2;130;170;90m'
+BRIGHT_ORANGE=$'\033[38;2;255;158;100m'
+BRIGHT_RED=$'\033[38;2;247;118;142m'
+BRIGHT_CYAN=$'\033[38;2;125;207;255m'
+BRIGHT_MAGENTA=$'\033[38;2;187;154;247m'
+BRIGHT_YELLOW=$'\033[38;2;224;175;104m'
 
 # Map DA_COLOR to actual ANSI color code
 case "$DA_COLOR" in
-    "purple") DA_DISPLAY_COLOR='\033[38;2;147;112;219m' ;;
+    "purple") DA_DISPLAY_COLOR=$'\033[38;2;147;112;219m' ;;
     "blue") DA_DISPLAY_COLOR="$BRIGHT_BLUE" ;;
     "green") DA_DISPLAY_COLOR="$BRIGHT_GREEN" ;;
     "cyan") DA_DISPLAY_COLOR="$BRIGHT_CYAN" ;;
@@ -74,31 +75,31 @@ case "$DA_COLOR" in
     "yellow") DA_DISPLAY_COLOR="$BRIGHT_YELLOW" ;;
     "red") DA_DISPLAY_COLOR="$BRIGHT_RED" ;;
     "orange") DA_DISPLAY_COLOR="$BRIGHT_ORANGE" ;;
-    *) DA_DISPLAY_COLOR='\033[38;2;147;112;219m' ;;  # Default to purple
+    *) DA_DISPLAY_COLOR=$'\033[38;2;147;112;219m' ;;  # Default to purple
 esac
 
 # Line-specific colors
 LINE1_PRIMARY="$BRIGHT_PURPLE"
-LINE1_ACCENT='\033[38;2;160;130;210m'
-MODEL_PURPLE='\033[38;2;138;99;210m'
+LINE1_ACCENT=$'\033[38;2;160;130;210m'
+MODEL_PURPLE=$'\033[38;2;138;99;210m'
 
 LINE2_PRIMARY="$DARK_BLUE"
-LINE2_ACCENT='\033[38;2;110;150;210m'
+LINE2_ACCENT=$'\033[38;2;110;150;210m'
 
 LINE3_PRIMARY="$DARK_GREEN"
-LINE3_ACCENT='\033[38;2;140;180;100m'
+LINE3_ACCENT=$'\033[38;2;140;180;100m'
 COST_COLOR="$LINE3_ACCENT"
-TOKENS_COLOR='\033[38;2;169;177;214m'
+TOKENS_COLOR=$'\033[38;2;169;177;214m'
 
-SEPARATOR_COLOR='\033[38;2;140;152;180m'
-DIR_COLOR='\033[38;2;135;206;250m'
+SEPARATOR_COLOR=$'\033[38;2;140;152;180m'
+DIR_COLOR=$'\033[38;2;135;206;250m'
 
 # MCP colors
 MCP_DAEMON="$BRIGHT_BLUE"
 MCP_STRIPE="$LINE2_ACCENT"
 MCP_DEFAULT="$LINE2_PRIMARY"
 
-RESET='\033[0m'
+RESET=$'\033[0m'
 
 # Format MCP names efficiently
 mcp_names_formatted=""
@@ -126,8 +127,16 @@ done
 
 # Output the full 3-line statusline
 # LINE 1 - PURPLE theme with all counts
-printf "${DA_DISPLAY_COLOR}${DA_NAME}${RESET}${LINE1_PRIMARY} here, running on ${MODEL_PURPLE}🧠 ${model_name}${RESET}${LINE1_PRIMARY} in ${DIR_COLOR}📁 ${dir_name}${RESET}${LINE1_PRIMARY}, ${RESET}${LINE1_PRIMARY}🔧 ${skills_count} Skills${RESET}${LINE1_PRIMARY}, ${RESET}${LINE1_PRIMARY}🔌 ${mcps_count} MCPs${RESET}${LINE1_PRIMARY}, and ${RESET}${LINE1_PRIMARY}📚 ${fabric_count} Patterns${RESET}\n"
+printf "%s%s%s%s here, running on %s🧠 %s%s%s in 📁 %s%s%s%s\n" \
+    "$DA_DISPLAY_COLOR" "$DA_NAME" "$RESET" "$LINE1_PRIMARY" \
+    "$MODEL_PURPLE" "$model_name" "$RESET" "$LINE1_PRIMARY" \
+    "$DIR_COLOR" "$dir_name" "$RESET" "$RESET"
 
-# LINE 2 - BLUE theme with MCP names
-printf "${LINE2_PRIMARY}🔌 MCPs${RESET}${LINE2_PRIMARY}${SEPARATOR_COLOR}: ${RESET}${mcp_names_formatted}${RESET}\n"
+printf "%s🔧 %s Skills%s%s, %s%s🔌 %s MCPs%s%s, and %s%s📚 %s Patterns%s\n" \
+  "${LINE1_PRIMARY}" "${skills_count}" "${RESET}" "${LINE1_PRIMARY}" \
+  "${RESET}" "${LINE1_PRIMARY}" "${mcps_count}" "${RESET}" "${LINE1_PRIMARY}" \
+  "${RESET}" "${LINE1_PRIMARY}" "${fabric_count}" "${RESET}"
+
+# LINE 3 - BLUE theme with MCP names
+printf "%s🔌 MCPs%s%s: %s%s%s\n" "$LINE2_PRIMARY" "$RESET" "$LINE2_PRIMARY" "$SEPARATOR_COLOR" "$mcp_names_formatted" "$RESET"
 
