@@ -14,42 +14,13 @@ model_name=$(echo "$input" | jq -r '.model.display_name')
 # Get directory name
 dir_name=$(basename "$current_dir")
 
-# Count items from specified directories
+# Counts are injected at build time since nix store is read-only
+# These values are computed during the nix build phase
 claude_dir="@paiBasePath@/claude"
-commands_count=0
-mcps_count=0
-skills_count=0
-fabric_count=0
-
-# Count commands (optimized - direct ls instead of find)
-if [ -d "$claude_dir/commands" ]; then
-    commands_count=$(ls -1 "$claude_dir/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-fi
-
-if [ -d "$claude_dir/skills" ]; then
-  skills_count=$(find "$claude_dir/skills" -name SKILL.md 2>/dev/null |wc -l | tr -d ' ')
-fi
-
-# Count MCPs from .mcp.json (single parse)
-mcp_names_raw=""
-if [ -f "$claude_dir/mcp.json" ]; then
-    mcp_data=$(jq -r '.mcpServers | keys | join(" "), length' "$claude_dir/mcp.json" 2>/dev/null)
-    mcp_names_raw=$(echo "$mcp_data" | head -1)
-    mcps_count=$(echo "$mcp_data" | tail -1)
-else
-    mcps_count="0"
-fi
-
-# Count Fabric patterns (optimized - count subdirectories)
-# Use bundled PAI fabric if available, fallback to system-wide installation
-fabric_patterns_dir="$claude_dir/skills/fabric/fabric-repo/patterns"
-if [ ! -d "$fabric_patterns_dir" ]; then
-    fabric_patterns_dir="${HOME}/.config/fabric/patterns"
-fi
-if [ -d "$fabric_patterns_dir" ]; then
-    # Count immediate subdirectories only
-    fabric_count=$(find "$fabric_patterns_dir" -maxdepth 1 -type d -not -path "$fabric_patterns_dir" 2>/dev/null | wc -l | tr -d ' ')
-fi
+skills_count="@skills_count@"
+mcps_count="@mcps_count@"
+fabric_count="@fabric_count@"
+mcp_names_raw="@mcp_names_raw@"
 
 # Tokyo Night Storm Color Scheme
 # Using $'...' syntax so escape sequences become actual ESC characters

@@ -97,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "@paiBasePath@/claude/hooks/update-tab-titles.ts"
+            "command": "@paiBasePath@/claude/hooks/update-tab-titles.js"
           }
         ]
       }
@@ -107,11 +107,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "@paiBasePath@/claude/hooks/load-core-context.ts"
+            "command": "@paiBasePath@/claude/hooks/load-core-context.js"
           },
           {
             "type": "command",
-            "command": "@paiBasePath@/claude/hooks/initialize-pai-session.ts"
+            "command": "@paiBasePath@/claude/hooks/initialize-pai-session.js"
           }
         ]
       }
@@ -121,11 +121,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "@paiBasePath@/claude/hooks/stop-hook.ts"
+            "command": "@paiBasePath@/claude/hooks/stop-hook.js"
           },
           {
             "type": "command",
-            "command": "@paiBasePath@/claude/hooks/capture-all-events.ts --event-type Stop"
+            "command": "@paiBasePath@/claude/hooks/capture-all-events.js --event-type Stop"
           }
         ]
       }
@@ -135,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "@paiBasePath@/claude/hooks/permission-prompt-hook.ts"
+            "command": "@paiBasePath@/claude/hooks/permission-prompt-hook.js"
           }
         ]
       }

@@ -27,6 +27,7 @@ in {
         [
           bun
           jq
+          nodejs # Required for hooks - Node.js runs nix store files instantly while bun has ~5s delay
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
           #nix-ai-tools.package.${pkgs.stdenv.hostPlatform.system}.openskills
         ]
@@ -312,8 +313,22 @@ in {
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/codex/managed_config.toml \
               --replace-quiet @paiBasePath@ "$out"
+          # Compute statusline counts at build time (nix store is read-only)
+          skills_count=$(find $out/claude/skills -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')
+          mcps_count=$(${pkgs.jq}/bin/jq -r '.mcpServers | length' $out/claude/mcp.json 2>/dev/null || echo "0")
+          mcp_names_raw=$(${pkgs.jq}/bin/jq -r '.mcpServers | keys | join(" ")' $out/claude/mcp.json 2>/dev/null || echo "")
+          fabric_patterns_dir="$out/claude/skills/fabric/fabric-repo/patterns"
+          if [ -d "$fabric_patterns_dir" ]; then
+              fabric_count=$(find "$fabric_patterns_dir" -maxdepth 1 -type d -not -path "$fabric_patterns_dir" 2>/dev/null | wc -l | tr -d ' ')
+          else
+              fabric_count="0"
+          fi
           substituteInPlace $out/claude/statusline-command.sh \
-              --replace-quiet @paiBasePath@ "$out"
+              --replace-quiet @paiBasePath@ "$out" \
+              --replace-quiet @skills_count@ "$skills_count" \
+              --replace-quiet @mcps_count@ "$mcps_count" \
+              --replace-quiet @fabric_count@ "$fabric_count" \
+              --replace-quiet @mcp_names_raw@ "$mcp_names_raw"
           substituteInPlace $out/opencode/config.json \
               --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
               --replace-quiet @paiBasePath@ "$out"
@@ -373,6 +388,26 @@ in {
                   --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
                   --replace-quiet @paiBasePath@ "$out"
           done
+
+          # Pre-compile TypeScript hooks to JavaScript for faster startup
+          # IMPORTANT: We use Node.js (not Bun) to run hooks because:
+          # - Bun has a ~5-10 second performance penalty when running files from /nix/store paths
+          # - Node.js runs the same files from /nix/store in ~9ms
+          # - This is a known issue with Bun on macOS + Nix store paths
+          # We still use Bun for compilation since it's fast for that purpose
+          echo "Pre-compiling TypeScript hooks to JavaScript for Node.js..."
+          for hook in $out/claude/hooks/*.ts; do
+            if [ -f "$hook" ]; then
+              hookname=$(basename "$hook" .ts)
+              echo "  Compiling $hookname.ts -> $hookname.js"
+              # Compile with bun (fast), output as node-compatible JS
+              ${pkgs.bun}/bin/bun build "$hook" --outfile "$out/claude/hooks/$hookname.js" --target node 2>/dev/null
+              rm "$hook"
+              # Replace shebang with explicit node path for nix store compatibility
+              ${pkgs.gnused}/bin/sed -i '1s|^#!.*|#!${pkgs.nodejs}/bin/node|' "$out/claude/hooks/$hookname.js"
+            fi
+          done
+          echo "Hook pre-compilation complete (using Node.js runtime)."
 
         '';
       };
