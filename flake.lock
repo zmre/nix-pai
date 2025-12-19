@@ -22,6 +22,22 @@
         "type": "github"
       }
     },
+    "fabric": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1766101528,
+        "narHash": "sha256-Vns0dHbQzO/iTAXZgV7U21JnVNbkorD4PH3o2D4zzkI=",
+        "owner": "danielmiessler",
+        "repo": "fabric",
+        "rev": "26ac5f3bf97579cea7339e67a20e891851fb7453",
+        "type": "github"
+      },
+      "original": {
+        "owner": "danielmiessler",
+        "repo": "fabric",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -95,6 +111,7 @@
     },
     "root": {
       "inputs": {
+        "fabric": "fabric",
         "flake-parts": "flake-parts",
         "nix-ai-tools": "nix-ai-tools",
         "nixpkgs": "nixpkgs"

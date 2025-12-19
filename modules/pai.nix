@@ -162,12 +162,12 @@ in {
           mkdir -p $out/claude
           rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' "${localsrc}/claude/" "$out/claude/"
 
-          # Fabric patterns: copy if enabled, using patternsSource or fabric-ai package
+          # Fabric patterns: copy if enabled, using patternsSource or fabric repo input
           ${lib.optionalString perSystemConfig.pai.fabric.includePatterns ''
             PATTERNS_SRC="${
               if perSystemConfig.pai.fabric.patternsSource != null
-              then "${perSystemConfig.pai.fabric.patternsSource}/patterns"
-              else "${pkgs.fabric-ai.src}/data/patterns"
+              then "${perSystemConfig.pai.fabric.patternsSource}"
+              else "${inputs.fabric}/data/patterns"
             }"
             mkdir -p $out/claude/skills/fabric/tools
             cp -R "$PATTERNS_SRC" $out/claude/skills/fabric/tools/

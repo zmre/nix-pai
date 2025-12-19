@@ -77,10 +77,9 @@
             type = lib.types.nullOr lib.types.path;
             default = null;
             description = ''
-              Path to fabric patterns source. When null and includePatterns is true,
-              uses patterns from the fabric-ai package.
-              Can be overridden with a flake input, e.g., inputs.fabric-patterns
-              where fabric-patterns.url = "github:danielmiessler/fabric";
+              Path to fabric patterns directory. When null and includePatterns is true,
+              uses patterns from the fabric flake input (github:danielmiessler/fabric/data/patterns).
+              Can be overridden with a custom path pointing directly to a patterns directory.
             '';
           };
         };
