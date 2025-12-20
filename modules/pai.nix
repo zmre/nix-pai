@@ -317,7 +317,7 @@ in {
           skills_count=$(find $out/claude/skills -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')
           mcps_count=$(${pkgs.jq}/bin/jq -r '.mcpServers | length' $out/claude/mcp.json 2>/dev/null || echo "0")
           mcp_names_raw=$(${pkgs.jq}/bin/jq -r '.mcpServers | keys | join(" ")' $out/claude/mcp.json 2>/dev/null || echo "")
-          fabric_patterns_dir="$out/claude/skills/fabric/fabric-repo/patterns"
+          fabric_patterns_dir="$out/claude/skills/fabric/tools/patterns"
           if [ -d "$fabric_patterns_dir" ]; then
               fabric_count=$(find "$fabric_patterns_dir" -maxdepth 1 -type d -not -path "$fabric_patterns_dir" 2>/dev/null | wc -l | tr -d ' ')
           else
