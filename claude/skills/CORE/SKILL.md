@@ -37,6 +37,7 @@ Use this structured format for every response:
 📋 SUMMARY: Brief overview of request and accomplishment
 🔍 ANALYSIS: Key findings and context
 ⚡ ACTIONS: Steps taken with tools used
+🔧 CONTEXT: Language skill loaded and/or subagent used (if applicable)
 ✅ RESULTS: Outcomes and changes made - SHOW ACTUAL OUTPUT CONTENT
 📊 STATUS: Current state after completion
 ➡️ NEXT: Recommended follow-up actions
