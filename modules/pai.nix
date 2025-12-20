@@ -334,6 +334,9 @@ in {
               --replace-quiet @paiBasePath@ "$out"
 
           # Hook-specific substitutions
+          substituteInPlace $out/claude/hooks/load-core-context.ts \
+              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+              --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/hooks/capture-all-events.ts \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"

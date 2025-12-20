@@ -127,16 +127,6 @@
           type = lib.types.listOf lib.types.path;
           default = [];
         };
-        devStackPrefs = lib.mkOption {
-          type = lib.types.str;
-          default = ''
-            - **Rust > TypeScript > Python**: Prefer Rust first, TypeScript second for development tasks
-            - **Package Managers**:
-              - Rust: cargo
-              - JavaScript/TypeScript: bun (NOT npm, yarn, or pnpm)
-              - Python (if needed): uv (NOT pip)
-          '';
-        };
         additionalCoreInstructions = lib.mkOption {
           type = lib.types.str;
           default = "";

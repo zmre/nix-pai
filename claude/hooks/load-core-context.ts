@@ -32,9 +32,8 @@ import { homedir } from 'os';
 async function main() {
   try {
     // Check if this is a subagent session - if so, exit silently
-    const claudeProjectDir = process.env.CLAUDE_PROJECT_DIR || '';
-    const isSubagent = claudeProjectDir.includes('/.claude/agents/') ||
-      process.env.CLAUDE_AGENT_TYPE !== undefined;
+    const claudeProjectDir = '@paiBasePath@/claude';
+    const isSubagent = process.env.CLAUDE_AGENT_TYPE !== undefined;
 
     if (isSubagent) {
       // Subagent sessions don't need PAI context loading
@@ -43,7 +42,7 @@ async function main() {
     }
 
     // Get PAI directory from environment or use default
-    const paiDir = process.env.PAI_DIR;
+    const paiDir = '@paiBasePath@';
     const paiSkillPath = join(paiDir, 'claude/skills/CORE/SKILL.md');
 
     // Verify PAI skill file exists
