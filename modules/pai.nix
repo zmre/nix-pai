@@ -351,7 +351,6 @@ in {
           substituteInPlace $out/gemini/GEMINI.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @keyContacts@ '${perSystemConfig.pai.keyContacts}' \
-              --replace-quiet @devStackPrefs@ '${perSystemConfig.pai.devStackPrefs}' \
               --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
               --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
@@ -360,7 +359,6 @@ in {
           substituteInPlace $out/claude/skills/CORE/SKILL.md \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @keyContacts@ '${perSystemConfig.pai.keyContacts}' \
-              --replace-quiet @devStackPrefs@ '${perSystemConfig.pai.devStackPrefs}' \
               --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
               --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \

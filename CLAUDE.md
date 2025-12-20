@@ -134,7 +134,6 @@ Claude-specific settings:
 - `pai.extraClaudeSettings.companyAnnouncements` - Startup message
 
 User context (used in CORE skill):
-- `pai.devStackPrefs` - Technology stack preferences
 - `pai.keyBio` - User biography
 - `pai.keyContacts` - Important contacts
 - `pai.socialMedia` - Social media links
