@@ -233,6 +233,7 @@
                         "WebFetch(domain:docs.rs)"
                         "Read(./**)"
                         "Read(/tmp/**)"
+                        "Bash(cat @paiBaseBath@:*)"
                         "Read(/@paiBasePath@/claude/**)"
                         "Glob(/@paiBasePath@/claude/*)"
                         "Grep(/@paiBasePath@/claude/*)"
