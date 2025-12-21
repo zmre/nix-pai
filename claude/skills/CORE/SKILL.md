@@ -57,7 +57,7 @@ Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUT
 
 ### Use SubAgents
 
-When in a programming project folder, favor using the **Engineer** subagent.
+When in a programming project folder, favor using the **Engineer** sub-agent and in general, if a sub-agent located in `@paiBasePath@/claude/agents` fits, you must use it.
 
 
 ---

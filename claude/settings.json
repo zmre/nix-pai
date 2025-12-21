@@ -57,7 +57,8 @@
       "Grep(./*)",
       "WebFetch(domain:*)",
       "WebSearch",
-      "NotebookEdit(./*)"
+      "NotebookEdit(./*)",
+      "Task"
     ],
     "ask": [
       @permissionsAsk@
