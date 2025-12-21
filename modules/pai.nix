@@ -15,6 +15,14 @@ in {
       # Generate settings.json content from merged settings
       settingsJsonContent = builtins.toJSON perSystemConfig.pai.claudeSettings;
 
+      # Generate mcp.json content from mcpServers option
+      # Filter out null values from each server config to keep JSON clean
+      cleanMcpServer = server:
+        lib.filterAttrs (name: value: value != null && value != {}) server;
+      mcpJsonContent = builtins.toJSON {
+        mcpServers = lib.mapAttrs (name: server: cleanMcpServer server) perSystemConfig.pai.mcpServers;
+      };
+
       # Import fabric module with necessary dependencies
       fabricWrapped = import ./fabric.nix {
         inherit pkgs lib secretLookup perSystemConfig;
@@ -154,14 +162,19 @@ in {
           ''}
 
                     # Copy in all the settings files, excluding fabric patterns (handled separately)
-                    # and settings.json (generated from Nix options)
+                    # and settings.json/mcp.json (generated from Nix options)
                     # Use --chmod=u+w to ensure all files are writable (nix store sources are read-only)
                     mkdir -p $out/claude
-                    rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' --exclude='settings.json' "${localsrc}/claude/" "$out/claude/"
+                    rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' --exclude='settings.json' --exclude='mcp.json' "${localsrc}/claude/" "$out/claude/"
 
                     # Generate settings.json from claudeSettings option
                     cat > $out/claude/settings.json <<'EOF'
           ${settingsJsonContent}
+          EOF
+
+                    # Generate mcp.json from mcpServers option
+                    cat > $out/claude/mcp.json <<'EOF'
+          ${mcpJsonContent}
           EOF
 
                     # Fabric patterns: copy if enabled, using patternsSource or fabric repo input
@@ -300,6 +313,10 @@ in {
                     # Do substitutions - settings.json uses @paiBasePath@ and @assistantName@ placeholders
 
                     substituteInPlace $out/claude/settings.json \
+                        --replace-quiet @paiBasePath@ "$out" \
+                        --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}'
+
+                    substituteInPlace $out/claude/mcp.json \
                         --replace-quiet @paiBasePath@ "$out" \
                         --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}'
 

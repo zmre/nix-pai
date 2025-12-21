@@ -127,11 +127,19 @@ Key options in `modules/options.nix`:
 - `pai.extraAgents` - Additional agent files to copy
 - `pai.ollamaServer` - Ollama server URL (default: "127.0.0.1:11434")
 
-Claude-specific settings:
-- `pai.extraClaudeSettings.defaultMode` - Permission mode (default/acceptEdits/plan/bypassPermissions)
-- `pai.extraClaudeSettings.permissionsAllow/Ask/Deny` - Permission rules
-- `pai.extraClaudeSettings.outputStyle` - Output style (default/explanatory/learning)
-- `pai.extraClaudeSettings.companyAnnouncements` - Startup message
+Claude-specific settings (`pai.claudeSettings.*`):
+- `permissions.defaultMode` - Permission mode (default/acceptEdits/plan/bypassPermissions)
+- `permissions.allow/ask/deny` - Permission rule lists
+- `outputStyle` - Output style (default/explanatory/learning)
+- `companyAnnouncements` - Startup messages list
+- `hooks` - Event hooks configuration
+- `statusLine` - Status line configuration
+
+MCP server configuration (`pai.mcpServers`):
+- Attribute set of MCP server configurations
+- Each server can have: type, url, command, args, headers, env
+- Default includes `Ref` server for documentation lookup
+- Supports `@paiBasePath@` and `@assistantName@` placeholders
 
 User context (used in CORE skill):
 - `pai.keyBio` - User biography
@@ -140,12 +148,14 @@ User context (used in CORE skill):
 
 ## Important Files
 
-- `claude/settings.json` - Claude Code settings with permissions and hooks
-- `claude/mcp.json` - MCP server configuration
+- `claude/settings.json` - Generated from `pai.claudeSettings` option (not checked in)
+- `claude/mcp.json` - Generated from `pai.mcpServers` option (not checked in)
 - `claude/skills/CORE/SKILL.md` - Core system identity and instructions
 - `claude/hooks/load-core-context.ts` - Loads CORE skill on session start
 - `opencode/config.json` - OpenCode configuration (private/local AI)
 - `SECURITY.md` - Critical security guidelines for public repo
+- `modules/options.nix` - All configurable options including claudeSettings and mcpServers
+- `modules/pai.nix` - Build logic that generates config files from options
 
 ## Security Guidelines
 

@@ -84,6 +84,68 @@
           };
         };
 
+        # MCP servers configuration - generated as mcp.json at build time
+        mcpServers = lib.mkOption {
+          type = lib.types.attrsOf (lib.types.submodule {
+            freeformType = lib.types.attrsOf lib.types.anything;
+            options = {
+              type = lib.mkOption {
+                type = lib.types.str;
+                default = "http";
+                description = "MCP server type (http, stdio, etc.)";
+              };
+              url = lib.mkOption {
+                type = lib.types.nullOr lib.types.str;
+                default = null;
+                description = "URL for http-type MCP servers";
+              };
+              command = lib.mkOption {
+                type = lib.types.nullOr lib.types.str;
+                default = null;
+                description = "Command for stdio-type MCP servers";
+              };
+              args = lib.mkOption {
+                type = lib.types.nullOr (lib.types.listOf lib.types.str);
+                default = null;
+                description = "Arguments for stdio-type MCP servers";
+              };
+              headers = lib.mkOption {
+                type = lib.types.attrsOf lib.types.str;
+                default = {};
+                description = "HTTP headers for the MCP server";
+              };
+              env = lib.mkOption {
+                type = lib.types.attrsOf lib.types.str;
+                default = {};
+                description = "Environment variables for stdio-type MCP servers";
+              };
+            };
+          });
+          default = {
+            Ref = {
+              type = "http";
+              url = "https://api.ref.tools/mcp";
+              headers = {
+                "x-ref-api-key" = "\${REF_TOOLS_KEY}";
+              };
+            };
+          };
+          description = ''
+            MCP server configurations for Claude Code.
+            Each key is the server name, value is the server configuration.
+            Use @paiBasePath@ and @assistantName@ as placeholders - they are substituted during build.
+            Any server can be added or overridden using standard Nix module merging.
+            Example:
+              mcpServers = {
+                MyServer = {
+                  type = "stdio";
+                  command = "my-mcp-server";
+                  args = ["--port" "8080"];
+                };
+              };
+          '';
+        };
+
         # Full Claude Code settings.json structure - generated as JSON at build time
         claudeSettings = lib.mkOption {
           type = lib.types.submodule {
@@ -191,6 +253,8 @@
                       default = [
                         "Bash(sudo:*)"
                         "Bash(git push:*)"
+                        "Bash(rm:*)"
+                        "Bash(git rm:*)"
                         "Read(./.env)"
                       ];
                       description = "Tool permissions that require user confirmation. Use lib.mkAfter [...] to append to defaults.";

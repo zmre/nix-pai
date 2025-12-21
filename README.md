@@ -41,7 +41,9 @@ To be clear: you should be able to use your assistant just fine without doing an
 
 ## Usage
 
-This project uses [flake-parts](https://flake.parts) to make the flake modular and configurable.  There may be a way to use it without using flake-parts (it's still just the standard flake system after all), but the example below demonstrates how to use flake-parts to add some basic customization.
+This project uses [flake-parts](https://flake.parts) to make the flake modular and configurable. There may be a way to use it without using flake-parts (it's still just the standard flake system after all), but the example below demonstrates how to use flake-parts to add some basic customization.
+
+### Basic Example
 
 ```nix
 {
@@ -66,7 +68,7 @@ This project uses [flake-parts](https://flake.parts) to make the flake modular a
       pai = {
         assistantName = "Jeeves";
         assistantColor = "red";
-        commandName = "jv"; # this is the command you'll from the terminal
+        commandName = "jv"; # this is the command you'll run from the terminal
         userFullName = "Patrick Walsh";
         extraSkills = [./skills];
       };
@@ -82,16 +84,79 @@ This project uses [flake-parts](https://flake.parts) to make the flake modular a
 }
 ```
 
-With that, you can just `nix run` your flake or you can include the flake in your OS build or as if it is just a single program.  
+### Advanced Configuration
 
-But it isn't just a single program, but a collection of AI tools. So if you install it, you'll have all of these commands (and more) in your path: 
+Both `claudeSettings` and `mcpServers` are Nix options that generate `settings.json` and `mcp.json` at build time. You can override defaults or add to them:
 
-* `jv`, (or whatever you called your assistant -- this is how you call claude with all the extra prompts and instructions setup), 
+```nix
+{
+  pai = {
+    assistantName = "Iris";
+    commandName = "i";
+
+    # Override or extend Claude Code settings
+    claudeSettings = {
+      outputStyle = "explanatory";
+      companyAnnouncements = ["Welcome! I'm Iris, ready to help."];
+      permissions = {
+        defaultMode = "default";
+        # Add to default allow list
+        allow = lib.mkAfter [
+          "Bash(docker:*)"
+          "Bash(kubectl:*)"
+        ];
+      };
+    };
+
+    # Override or extend MCP servers
+    # Default includes Ref server for documentation lookup
+    mcpServers = {
+      # Add a new MCP server
+      playwright = {
+        type = "stdio";
+        command = "npx";
+        args = ["-y" "@anthropic/mcp-playwright"];
+      };
+      # Override default Ref server settings (optional)
+      Ref = {
+        type = "http";
+        url = "https://api.ref.tools/mcp";
+        headers = {
+          "x-ref-api-key" = "\${REF_TOOLS_KEY}";
+        };
+      };
+    };
+  };
+}
+```
+
+### MCP Server Configuration
+
+MCP servers can be configured with these options:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `type` | string | Server type: `"http"` or `"stdio"` |
+| `url` | string | URL for http-type servers |
+| `command` | string | Command for stdio-type servers |
+| `args` | list | Arguments for stdio-type servers |
+| `headers` | attrs | HTTP headers (for http-type) |
+| `env` | attrs | Environment variables (for stdio-type) |
+
+Both `@paiBasePath@` and `@assistantName@` are valid placeholders that get substituted at build time.
+
+### Included Tools
+
+With that, you can just `nix run` your flake or you can include the flake in your OS build or as if it is just a single program.
+
+But it isn't just a single program, but a collection of AI tools. So if you install it, you'll have all of these commands (and more) in your path:
+
+* `jv`, (or whatever you called your assistant -- this is how you call claude with all the extra prompts and instructions setup),
   * To be clear, `jv` is just an example; I use `i`, short for `iris`, and you can do whatever you want.
-* `claude`, (just vanilla or global config stuff), 
-* `codex`, 
-* `gemini`, 
-* `fabric`, 
-* and some others.  
+* `claude`, (just vanilla or global config stuff),
+* `codex`,
+* `gemini`,
+* `fabric`,
+* and some others.
 
-No worries if you don't use them, they're taking up space but inert.  Or you can toggle them off in the config.
+No worries if you don't use them, they're taking up space but inert. Or you can toggle them off in the config.
