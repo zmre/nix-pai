@@ -75,11 +75,10 @@ in {
 
       # needs to be rw, so this fails: --set CODEX_HOME $out/codex \
       mkWrapSecret = binary: ''
-        [ -e $out/bin/${binary} ] && wrapProgram $out/bin/${binary} \
+        [ -e $out/bin/${binary} ] && makeWrapper $out/bin/${binary} $out/bin/${perSystemConfig.pai.commandName}-${binary} \
         ${lib.concatStringsSep " " (lib.mapAttrsToList (
-            key: value: ''--run 'export ${key}="${secretLookup value}"' ''
-          )
-          (secrets binary))} \
+          key: value: ''--run 'export ${key}="${secretLookup value}"' ''
+        ) (secrets binary))} \
           --prefix PATH : "$out/bin" \
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
@@ -128,25 +127,24 @@ in {
         '';
 
         installPhase = ''
-                    # Next simulate symlinkJoin function by linking inputs
-                    mkdir -p $out/bin
-                    ${lib.strings.concatMapStrings (x: "ln -s ${x}/bin/* $out/bin/\n") corePackages}
+            # Next simulate symlinkJoin function by linking inputs
+            mkdir -p $out/bin
+            ${lib.strings.concatMapStrings (x: "ln -s ${x}/bin/* $out/bin/\n") corePackages}
 
-                    ${lib.concatStringsSep "\n" (
-            lib.map mkWrapSecret binariesToWrap
-          )}
+            ${lib.concatStringsSep "\n" (lib.map mkWrapSecret binariesToWrap)}
 
-                    # Next put the ai assistant into bin with the proper added environment
-                    makeWrapper "$out/bin/claude" "$out/bin/${perSystemConfig.pai.commandName}" \
-                        --set PAI_DIR "$out" \
-                        --set DA "${perSystemConfig.pai.assistantName}" \
-                        --set DA_COLOR "${perSystemConfig.pai.assistantColor}" \
-                        --set-default ENGINEER_NAME "${perSystemConfig.pai.userFullName}" \
-                        --prefix PATH : "$out/bin" \
-                        --add-flags "--settings $out/claude/settings.json --mcp-config $out/claude/mcp.json --plugin-dir $out/claude"
+            # Next put the ai assistant into bin with the proper added environment
+            makeWrapper "$out/bin/claude" "$out/bin/${perSystemConfig.pai.commandName}" \
+                --set PAI_DIR "$out" \
+                --set DA "${perSystemConfig.pai.assistantName}" \
+                --set DA_COLOR "${perSystemConfig.pai.assistantColor}" \
+                --set-default ENGINEER_NAME "${perSystemConfig.pai.userFullName}" \
+                --prefix PATH : "$out/bin" \
+                --add-flags "--settings $out/claude/settings.json --mcp-config $out/claude/mcp.json --plugin-dir $out/claude"
 
-                    # Next put the private ollama ai assistant into bin with the proper added environment
-                    ${lib.optionalString (perSystemConfig.pai.otherTools.enableOpencode) ''
+            # Next put the private ollama ai assistant into bin with the proper added environment
+            ${lib.optionalString (perSystemConfig.pai.otherTools.enableOpencode) ''
+
             makeWrapper "$out/bin/opencode" "$out/bin/${perSystemConfig.pai.commandName}-priv" \
                 ${lib.concatStringsSep " " (lib.mapAttrsToList (
                 key: value: ''--run 'export ${key}="${secretLookup value}"' ''
