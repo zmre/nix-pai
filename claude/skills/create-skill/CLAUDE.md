@@ -140,7 +140,7 @@ For components: `read ${PAI_DIR}/claude/skills/[name]/[subdirectory]/`
 
 **Good - research skill:**
 ```yaml
-description: Multi-source comprehensive research using perplexity-researcher,
+description: Multi-source comprehensive research using 
   claude-researcher, and gemini-researcher agents. Launches up to 10 parallel
   research agents for fast results. USE WHEN user says 'do research', 'research X',
   'find information about', 'investigate', 'analyze trends', 'current events',

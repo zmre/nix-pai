@@ -16,18 +16,18 @@ When a user asks for research, YOU must deliver **FAST RESULTS** through massive
 
 **THREE RESEARCH MODES:**
 
-1. **Quick Research: 3 agents (1 of each type)**
-   - 1 perplexity-researcher + 1 claude-researcher + 1 gemini-researcher
+1. **Quick Research: 2 agents (1 of each type)**
+   - 1 claude-researcher + 1 gemini-researcher
    - Use when user says "quick research" or simple queries
    - Fastest mode: ~15-20 seconds
 
-2. **Standard Research: 9 agents (3 of each type)**
-   - 3 perplexity-researcher + 3 claude-researcher + 3 gemini-researcher
+2. **Standard Research: 6 agents (3 of each type)**
+   - 3 claude-researcher + 3 gemini-researcher
    - Default mode for most research requests
    - Balanced coverage: ~30 seconds
 
-3. **Extensive Research: 24 agents (8 of each type)**
-   - 8 perplexity-researcher + 8 claude-researcher + 8 gemini-researcher
+3. **Extensive Research: 16 agents (8 of each type)**
+   - 8 claude-researcher + 8 gemini-researcher
    - Use when user says "extensive research"
    - Exhaustive coverage: ~45-60 seconds
 
@@ -72,8 +72,8 @@ Based on your deep thinking, generate 24 unique research angles/sub-questions.
 Each should be distinct, creative, and explore a different facet of the topic.
 Mix different types: technical, historical, practical, controversial, emerging, comparative, etc.
 
-Organize them into 3 groups of 8:
-- Group 1 (Perplexity): [8 queries optimized for broad web search]
+Organize them into 2 groups of 8:
+- Group 1 (Any): [8 queries optimized for broad web search]
 - Group 2 (Claude): [8 queries optimized for academic/detailed analysis]
 - Group 3 (Gemini): [8 queries optimized for multi-perspective synthesis]
 </instructions>
@@ -86,15 +86,6 @@ Organize them into 3 groups of 8:
 **CRITICAL: Use a SINGLE message with 24 Task tool calls**
 
 ```typescript
-// Launch 8 perplexity-researcher agents
-Task({ subagent_type: "perplexity-researcher", description: "Query 1", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 2", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 3", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 4", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 5", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 6", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 7", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 8", prompt: "..." })
 
 // Launch 8 claude-researcher agents
 Task({ subagent_type: "claude-researcher", description: "Query 9", prompt: "..." })
@@ -161,9 +152,6 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 ...
 
 ## Unique Insights
-**From Perplexity Research (Web/Current):**
-- Novel findings from broad web search
-
 **From Claude Research (Academic/Detailed):**
 - Deep analytical insights
 
@@ -179,9 +167,9 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 [Note any disagreements or gaps]
 
 ## Research Metrics
-- Total Agents: 24 (8 perplexity, 8 claude, 8 gemini)
+- Total Agents: 24 (8 claude, 8 gemini)
 - Total Queries: ~48+ (each agent 1-2 queries)
-- Services Used: 3 (Perplexity API, Claude WebSearch, Gemini Research)
+- Services Used: 3 ( Claude WebSearch, Gemini Research)
 - Total Output: ~[X] words
 - Confidence Level: [High/Medium] ([%])
 ```
@@ -195,7 +183,6 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 ### Step 1: Identify 3 Core Angles
 
 Break the question into 3 focused sub-questions - one optimized for each agent type:
-- **Angle 1 (Perplexity):** Current/web-based information
 - **Angle 2 (Claude):** Detailed/analytical perspective
 - **Angle 3 (Gemini):** Multi-perspective synthesis
 
@@ -203,7 +190,6 @@ Break the question into 3 focused sub-questions - one optimized for each agent t
 
 ```typescript
 // SINGLE message with 3 Task calls
-Task({ subagent_type: "perplexity-researcher", description: "Current info", prompt: "..." })
 Task({ subagent_type: "claude-researcher", description: "Deep analysis", prompt: "..." })
 Task({ subagent_type: "gemini-researcher", description: "Multi-perspective", prompt: "..." })
 ```
@@ -229,7 +215,6 @@ Task({ subagent_type: "gemini-researcher", description: "Multi-perspective", pro
 **Step 1a: Break Down the Research Question**
 
 Decompose the user's question into 9 specific sub-questions:
-- 3 questions optimized for Perplexity (web/current)
 - 3 questions optimized for Claude (academic/detailed)
 - 3 questions optimized for Gemini (multi-perspective)
 
@@ -244,10 +229,6 @@ Each question should cover:
 Use the **Task tool** - SINGLE message with 9 Task calls:
 
 ```typescript
-// Launch 3 perplexity-researcher agents
-Task({ subagent_type: "perplexity-researcher", description: "Query 1", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 2", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 3", prompt: "..." })
 
 // Launch 3 claude-researcher agents
 Task({ subagent_type: "claude-researcher", description: "Query 4", prompt: "..." })
@@ -261,7 +242,6 @@ Task({ subagent_type: "gemini-researcher", description: "Query 9", prompt: "..."
 ```
 
 **Available Research Agents:**
-- **perplexity-researcher**: Fast Perplexity API searches
 - **claude-researcher**: Claude WebSearch with intelligent query decomposition
 - **gemini-researcher**: Google Gemini multi-perspective research
 
@@ -306,8 +286,8 @@ Create a comprehensive report that:
 
 ### [Topic Area 1]
 **High Confidence:**
-- Finding X (Sources: perplexity-research, claude-research)
-- Finding Y (Sources: perplexity-research, claude-research)
+- Finding X (Sources:  claude-research)
+- Finding Y (Sources:  claude-research)
 
 **Medium Confidence:**
 - Finding Z (Source: claude-research)
@@ -316,7 +296,6 @@ Create a comprehensive report that:
 ...
 
 ## Source Attribution
-- **Perplexity-Research**: [summary of unique contributions]
 - **Claude-Research**: [summary of unique contributions]
 
 ## Conflicting Information
@@ -325,7 +304,7 @@ Create a comprehensive report that:
 
 **C. Calculate Research Metrics:**
 - **Total Queries**: Count all queries across all research commands
-- **Services Used**: List unique services (Perplexity API, Claude WebSearch, etc.)
+- **Services Used**: List unique services ( Claude WebSearch, etc.)
 - **Total Output**: Estimated character/word count of all research
 - **Confidence Level**: Overall confidence percentage
 - **Result**: 1-2 sentence answer to the research question
@@ -369,14 +348,14 @@ Create a comprehensive report that:
 ### QUICK RESEARCH (3 agents - 1 of each type):
 1. **3 FOCUSED ANGLES** - One per agent type
 2. **LAUNCH 3 AGENTS IN PARALLEL** - SINGLE message with 3 Task calls
-3. **OPTIMIZE per agent** - Perplexity (current), Claude (detailed), Gemini (multi-perspective)
+3. **OPTIMIZE per agent** -  Claude (detailed), Gemini (multi-perspective)
 4. **FAST RESULTS** - ~15-20 seconds
 
 ### STANDARD RESEARCH (9 agents - 3 of each type):
 1. **LAUNCH 9 AGENTS IN PARALLEL** - Use a SINGLE message with 9 Task tool calls
 2. **DECOMPOSE the question** - Create 9 focused sub-questions (3 per agent type)
 3. **ONE QUERY + ONE FOLLOW-UP per agent** - Quick, focused research cycles
-4. **BALANCE across agent types** - 3 perplexity + 3 claude + 3 gemini
+4. **BALANCE across agent types** - 3 claude + 3 gemini
 5. **WAIT for ALL agents** (~30 seconds) before synthesizing
 6. **SYNTHESIZE results** - Don't just concatenate outputs
 7. **USE the mandatory response format** - This is used elsewhere
@@ -387,7 +366,7 @@ Create a comprehensive report that:
 ### EXTENSIVE RESEARCH (24 agents - 8 of each type):
 1. **DETECT "extensive research" request** - Activate 24-agent mode
 2. **USE be-creative skill with UltraThink** - Generate 24 diverse query angles
-3. **LAUNCH 24 AGENTS IN PARALLEL** - 8 perplexity + 8 claude + 8 gemini (SINGLE message)
+3. **LAUNCH 24 AGENTS IN PARALLEL** - 8 claude + 8 gemini (SINGLE message)
 4. **ORGANIZE queries by agent type** - Optimize each group for that agent's strengths
 5. **WAIT for ALL 24 agents** (30-60 seconds) - Parallel execution
 6. **ENHANCED SYNTHESIS** - Comprehensive cross-validation and domain mapping
@@ -419,11 +398,6 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 1. ✅ Recognize research intent (hook loaded this command)
 2. ✅ **Decompose into 9 focused sub-questions (3 per agent type):**
 
-   **Perplexity (web/current):**
-   - What are the major quantum computing breakthroughs in 2025?
-   - What practical quantum applications are emerging?
-   - Latest quantum computing news and developments?
-
    **Claude (academic/detailed):**
    - Which companies are leading quantum computing development?
    - What's the state of quantum error correction research?
@@ -436,10 +410,6 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 
 3. ✅ **Launch 9 agents in PARALLEL (ONE message with 9 Task calls):**
    ```
-   // 3 Perplexity
-   Task(perplexity-researcher, "2025 quantum breakthroughs")
-   Task(perplexity-researcher, "Practical quantum applications")
-   Task(perplexity-researcher, "Latest quantum news")
 
    // 3 Claude
    Task(claude-researcher, "Leading quantum companies")
@@ -480,7 +450,6 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
    ```
 
 3. ✅ **Generate 24 creative queries organized by agent type:**
-   - **Perplexity (web/current):** Latest AI consciousness claims, current research papers, industry perspectives, consciousness tests, recent breakthroughs, ethical debates, etc.
    - **Claude (academic/detailed):** Philosophical frameworks, integrated information theory, neuroscience parallels, computational theories, historical evolution, etc.
    - **Gemini (multi-perspective):** Cross-cultural views on consciousness, interdisciplinary connections, consciousness in nature, emergence theories, etc.
 

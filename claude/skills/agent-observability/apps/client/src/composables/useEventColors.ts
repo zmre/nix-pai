@@ -9,7 +9,6 @@ export function useEventColors() {
     'architect': '#A855F7',        // purple
     'intern': '#06B6D4',           // cyan
     'artist': '#06B6D4',           // cyan
-    'perplexity-researcher': '#EAB308', // yellow
     'claude-researcher': '#EAB308',     // yellow
     'gemini-researcher': '#EAB308',     // yellow
     'qatester': '#EAB308',         // yellow

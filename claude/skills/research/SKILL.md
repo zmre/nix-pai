@@ -1,6 +1,6 @@
 ---
 name: research
-description: Multi-source comprehensive research using perplexity-researcher, claude-researcher, and gemini-researcher agents. Three modes - Quick (3 agents), Standard (9 agents), Extensive (24 agents with be-creative skill). USE WHEN user says 'do research', 'quick research', 'extensive research', 'find information about', 'investigate', 'analyze trends', 'current events', or any research-related request.
+description: Multi-source comprehensive research using claude-researcher and gemini-researcher agents. Three modes - Quick (3 agents), Standard (9 agents), Extensive (24 agents with be-creative skill). USE WHEN user says 'do research', 'quick research', 'extensive research', 'find information about', 'investigate', 'analyze trends', 'current events', or any research-related request.
 ---
 
 # Research Skill
@@ -60,14 +60,13 @@ This skill activates when the user requests research or information gathering:
 **Execute the `/conduct-research` slash command**, which handles the complete workflow:
 
 1. Decomposing research questions into 3-24 sub-questions
-2. Launching up to 24 parallel research agents (perplexity, claude, gemini)
+2. Launching up to 24 parallel research agents (claude, gemini)
 3. Collecting results in 15-60 seconds (**HARD TIMEOUT: 3 minutes max**)
 4. Synthesizing findings with confidence levels (even with partial results)
 5. Formatting comprehensive report with source attribution
 
 ## Available Research Agents
 
-- **perplexity-researcher**: Fast Perplexity API searches (web/current)
 - **claude-researcher**: Claude WebSearch with intelligent query decomposition (academic/detailed)
 - **gemini-researcher**: Google Gemini multi-perspective research (synthesis)
 
@@ -109,7 +108,6 @@ This skill activates when the user requests research or information gathering:
 ```
 ~/.local/share/pai/scratchpad/2025-10-26-143022_research-agi-frameworks/
 ├── raw-outputs/
-│   ├── perplexity-001.md
 │   ├── claude-001.md
 │   └── gemini-001.md
 ├── synthesis-notes.md
@@ -132,7 +130,7 @@ This skill activates when the user requests research or information gathering:
 
 **Date:** YYYY-MM-DD
 **Research Mode:** Quick/Standard/Extensive
-**Agents Used:** X perplexity, Y claude, Z gemini
+**Agents Used:** Y claude, Z gemini
 
 ## Research Question
 [Original question or topic]
