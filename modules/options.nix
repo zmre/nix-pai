@@ -396,13 +396,70 @@
               };
               instructions = lib.mkOption {
                 type = lib.types.listOf lib.types.str;
-                default = ["@paiBasePath@/claude/skills/CORE/SKILL.md"];
+                default = ["@paiBasePath@/claude/skills/CORE/SKILL.md" "AGENTS.md" "CONTRIBUTING.md" "DEVELOPMENT.md"];
                 description = "List of instruction file paths. Use @paiBasePath@ placeholder.";
               };
               model = lib.mkOption {
                 type = lib.types.str;
                 default = "ollama/qwen3:30b-a3b";
                 description = "Default model to use (format: provider/model)";
+              };
+              tui = lib.mkOption {
+                type = lib.types.submodule {
+                  freeformType = lib.types.attrsOf lib.types.anything;
+                  options = {
+                    scroll_speed = lib.mkOption {
+                      type = lib.types.int;
+                      default = 3;
+                      description = "Scroll speed for the TUI";
+                    };
+                  };
+                };
+                default = {};
+                description = "TUI settings for OpenCode";
+              };
+              keybinds = lib.mkOption {
+                type = lib.types.submodule {
+                  freeformType = lib.types.attrsOf lib.types.str;
+                  options = {
+                    leader = lib.mkOption {
+                      type = lib.types.str;
+                      default = ",";
+                      description = "Leader key for keybinds (e.g., \",\" or \"ctrl+x\")";
+                    };
+                    app_exit = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Exit the application";
+                    };
+                    session_new = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Create a new session";
+                    };
+                    session_interrupt = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Stop session execution";
+                    };
+                    sidebar_toggle = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Show/hide the sidebar";
+                    };
+                    model_list = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Show available models";
+                    };
+                  };
+                };
+                default = {};
+                description = ''
+                  Keybind settings for OpenCode. See https://opencode.ai/docs/keybinds/
+                  Common keys: leader, app_exit, session_new, session_interrupt, sidebar_toggle, model_list
+                  Any keybind from the docs can be added as an arbitrary key/value pair.
+                '';
               };
               provider = lib.mkOption {
                 type = lib.types.attrsOf (lib.types.submodule {
