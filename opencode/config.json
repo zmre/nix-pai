@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  // Theme configuration
   "theme": "opencode",
   "instructions": ["@paiBasePath@/claude/skills/CORE/SKILL.md"],
   "model": "ollama/qwen3:30b-a3b",
@@ -17,13 +16,19 @@
           "name": "GPT OSS 20b",
           "tool_call": true,
           "reasoning": true,
-          "temperature": true
+          "temperature": true,
+          "options": {
+            "num_ctx": 65536
+          }
         },
         "qwen3:30b-a3b": {
           "name": "Qwen3 30b A3B",
           "tool_call": true,
           "reasoning": true,
-          "temperature": true
+          "temperature": true,
+          "options": {
+            "num_ctx": 65536
+          }
         },
         "qwen3-coder:30b": {
           "name": "Qwen3 Coder 30b"
@@ -32,7 +37,10 @@
           "name": "Deepseek-r1 32b",
           "tool_call": false,
           "reasoning": true,
-          "temperature": true
+          "temperature": true,
+          "options": {
+            "num_ctx": 65536
+          }
         },
         "gemma3:27b": {
           "name": "Gemma3 27b"
