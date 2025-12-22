@@ -78,7 +78,7 @@ ${toolMapping}
 
           let resolved = null;
 
-          if (!skill_name in skillsList) {
+          if (!(skill_name in skillsList)) {
             return `Error: Skill "${skill_name}" not found.\n\nRun find_skills to see available skills.`;
           }
 
@@ -121,7 +121,7 @@ ${toolMapping}
 
           for (const [skillName, relativePath] of Object.entries(skillsList)) {
             output += `${skillName}\n`;
-            const fullPath = path.join(projectSkillsDir, pathToSkill);
+            const fullPath = path.join(projectSkillsDir, relativePath);
             const { description } = skillsCore.extractFrontmatter(fullPath);
 
             if (description) {

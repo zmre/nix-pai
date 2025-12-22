@@ -3,7 +3,7 @@
   // Theme configuration
   "theme": "opencode",
   "instructions": ["@paiBasePath@/claude/skills/CORE/SKILL.md"],
-  "model": "ollama/gpt-oss:20b",
+  "model": "ollama/qwen3:30b-a3b",
   "autoupdate": false,
   "provider": {
     "ollama": {
@@ -16,8 +16,8 @@
         "gpt-oss:20b": {
           "name": "GPT OSS 20b"
         },
-        "qwen3:30b": {
-          "name": "Qwen3 30b"
+        "qwen3:30b-a3b": {
+          "name": "Qwen3 30b A3B"
         },
         "qwen3-coder:30b": {
           "name": "Qwen3 Coder 30b"
