@@ -23,6 +23,31 @@ in {
         mcpServers = lib.mapAttrs (name: server: cleanMcpServer server) perSystemConfig.pai.mcpServers;
       };
 
+      # Generate opencode config.json content from opencodeSettings option
+      # Recursively filter out null values and empty attrs to keep JSON clean
+      cleanAttrs = attrs:
+        lib.filterAttrs (name: value: value != null && value != {}) (
+          lib.mapAttrs (name: value:
+            if builtins.isAttrs value
+            then cleanAttrs value
+            else value
+          ) attrs
+        );
+      cleanModel = model: cleanAttrs model;
+      cleanProvider = provider:
+        cleanAttrs (provider // {
+          models = lib.mapAttrs (name: model: cleanModel model) (provider.models or {});
+        });
+      opencodeJsonContent = builtins.toJSON (
+        {
+          "$schema" = "https://opencode.ai/config.json";
+          autoupdate = false;
+        }
+        // cleanAttrs (perSystemConfig.pai.opencodeSettings // {
+          provider = lib.mapAttrs (name: provider: cleanProvider provider) (perSystemConfig.pai.opencodeSettings.provider or {});
+        })
+      );
+
       # Import fabric module with necessary dependencies
       fabricWrapped = import ./fabric.nix {
         inherit pkgs lib secretLookup perSystemConfig;
@@ -224,9 +249,11 @@ in {
                     cp "${localsrc}/claude/skills/CORE/SKILL.md" "$out/gemini/GEMINI.md"
                     chmod u+w "$out/gemini/GEMINI.md"
 
-                    # Create opencode directory structure and copy config
+                    # Create opencode directory structure and generate config from Nix options
                     mkdir -p $out/opencode
-                    cp ${localsrc}/opencode/config.json $out/opencode/
+                    cat > $out/opencode/config.json <<'EOF'
+          ${opencodeJsonContent}
+          EOF
 
                     # Link agents and skills from claude to opencode
                     ln -s $out/claude/agents $out/opencode/agent

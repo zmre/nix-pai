@@ -384,6 +384,140 @@
           '';
         };
 
+        # OpenCode settings.json structure - generated as JSON at build time
+        opencodeSettings = lib.mkOption {
+          type = lib.types.submodule {
+            freeformType = lib.types.attrsOf lib.types.anything;
+            options = {
+              theme = lib.mkOption {
+                type = lib.types.str;
+                default = "opencode";
+                description = "OpenCode theme name";
+              };
+              instructions = lib.mkOption {
+                type = lib.types.listOf lib.types.str;
+                default = ["@paiBasePath@/claude/skills/CORE/SKILL.md"];
+                description = "List of instruction file paths. Use @paiBasePath@ placeholder.";
+              };
+              model = lib.mkOption {
+                type = lib.types.str;
+                default = "ollama/qwen3:30b-a3b";
+                description = "Default model to use (format: provider/model)";
+              };
+              provider = lib.mkOption {
+                type = lib.types.attrsOf (lib.types.submodule {
+                  freeformType = lib.types.attrsOf lib.types.anything;
+                  options = {
+                    npm = lib.mkOption {
+                      type = lib.types.str;
+                      description = "NPM package for the provider SDK";
+                    };
+                    name = lib.mkOption {
+                      type = lib.types.str;
+                      description = "Display name for the provider";
+                    };
+                    options = lib.mkOption {
+                      type = lib.types.attrsOf lib.types.anything;
+                      default = {};
+                      description = "Provider-specific options (e.g., baseURL)";
+                    };
+                    models = lib.mkOption {
+                      type = lib.types.attrsOf (lib.types.submodule {
+                        freeformType = lib.types.attrsOf lib.types.anything;
+                        options = {
+                          name = lib.mkOption {
+                            type = lib.types.str;
+                            description = "Display name for the model";
+                          };
+                          tool_call = lib.mkOption {
+                            type = lib.types.nullOr lib.types.bool;
+                            default = null;
+                            description = "Whether the model supports tool calls";
+                          };
+                          reasoning = lib.mkOption {
+                            type = lib.types.nullOr lib.types.bool;
+                            default = null;
+                            description = "Whether the model supports reasoning";
+                          };
+                          temperature = lib.mkOption {
+                            type = lib.types.nullOr lib.types.bool;
+                            default = null;
+                            description = "Whether the model supports temperature setting";
+                          };
+                          options = lib.mkOption {
+                            type = lib.types.attrsOf lib.types.anything;
+                            default = {};
+                            description = "Model-specific options (e.g., num_ctx)";
+                          };
+                        };
+                      });
+                      default = {};
+                      description = "Models available for this provider";
+                    };
+                  };
+                });
+                default = {
+                  ollama = {
+                    npm = "@ai-sdk/openai-compatible";
+                    name = "Ollama";
+                    options = {
+                      baseURL = "@ollamaHost@/v1";
+                    };
+                    models = {
+                      "gpt-oss:20b" = {
+                        name = "GPT OSS 20b";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "qwen3:30b-a3b" = {
+                        name = "Qwen3 30b A3B";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "qwen3-coder:30b" = {
+                        name = "Qwen3 Coder 30b";
+                      };
+                      "deepseek-r1:32b" = {
+                        name = "Deepseek-r1 32b";
+                        tool_call = false;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "gemma3:27b" = {
+                        name = "Gemma3 27b";
+                      };
+                      "llama3:8b" = {
+                        name = "Llama3 8b";
+                      };
+                      "llama3.1:70b" = {
+                        name = "Llama3.1 70b";
+                      };
+                    };
+                  };
+                };
+                description = "Provider configurations with their models";
+              };
+            };
+          };
+          default = {};
+          description = ''
+            OpenCode config.json configuration.
+            Generated as JSON at build time with hardcoded $schema and autoupdate.
+            Use @paiBasePath@ and @ollamaHost@ as placeholders - they are substituted during build.
+          '';
+        };
+
         extraSkills = lib.mkOption {
           type = lib.types.listOf lib.types.path;
           default = [];

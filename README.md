@@ -145,6 +145,69 @@ MCP servers can be configured with these options:
 
 Both `@paiBasePath@` and `@assistantName@` are valid placeholders that get substituted at build time.
 
+### OpenCode Configuration (Private/Local AI)
+
+OpenCode is configured via `opencodeSettings` for local Ollama-based AI. The `$schema` and `autoupdate` keys are hardcoded and not configurable.
+
+```nix
+{
+  pai = {
+    # Change the default model
+    opencodeSettings = {
+      model = "ollama/deepseek-r1:32b";
+      theme = "catppuccin";
+
+      # Add a custom model to the ollama provider
+      provider.ollama.models."mistral:7b" = {
+        name = "Mistral 7B";
+        tool_call = true;
+        options.num_ctx = 32768;
+      };
+    };
+  };
+}
+```
+
+### Other Useful Options
+
+```nix
+{
+  pai = {
+    # Ollama server location (default: "127.0.0.1:11434") -- used by opencode and potentially others
+    ollamaServer = "192.168.1.100:11434";
+
+    # Toggle included tools -- puts them in your env and makes ${commandName}-${toolname} commands, like "iris-codex"
+    # that attempt to use the same skills, etc., as claude code. Mostly these are works in progress.
+    otherTools = {
+      enableCodex = false;   # OpenAI Codex
+      enableGemini = true;   # Google Gemini CLI
+      enableOpencode = true; # Local Ollama AI
+    };
+
+    # Fabric pattern tool
+    fabric = {
+      enable = true;
+      includePatterns = true;  # Bundle patterns in build
+      # patternsSource = ./my-patterns;  # Custom patterns directory
+    };
+
+    # Add packages to the environment
+    extraPackages = [ pkgs.ripgrep pkgs.fd ];
+
+    # Add custom skills, hooks, or agents
+    extraSkills = [ ./my-skills ];
+    extraHooks = [ ./my-hooks ];
+    extraAgents = [ ./my-agents ];
+
+    # User context for CORE skill
+    keyBio = "Job: Developer at Acme Corp";
+    keyContacts = "- **Jane** [Manager] - jane@acme.com";
+    socialMedia = "- **GitHub**: https://github.com/username";
+    additionalCoreInstructions = "## Project Preferences\n\nAlways use tabs.";
+  };
+}
+```
+
 ### Included Tools
 
 With that, you can just `nix run` your flake or you can include the flake in your OS build or as if it is just a single program.
@@ -153,10 +216,10 @@ But it isn't just a single program, but a collection of AI tools. So if you inst
 
 * `jv`, (or whatever you called your assistant -- this is how you call claude with all the extra prompts and instructions setup),
   * To be clear, `jv` is just an example; I use `i`, short for `iris`, and you can do whatever you want.
+* `jv-priv` will run opencode with a similar setup to claude code assistant, but using local/private ollama models
 * `claude`, (just vanilla or global config stuff),
 * `codex`,
 * `gemini`,
 * `fabric`,
 * and some others.
 
-No worries if you don't use them, they're taking up space but inert. Or you can toggle them off in the config.
