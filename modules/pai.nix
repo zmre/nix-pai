@@ -100,6 +100,7 @@ in {
           pkgs.makeWrapper
           pkgs.gawk
           pkgs.rsync
+          pkgs.parallel
         ];
         meta.mainProgram = perSystemConfig.pai.commandName;
         buildPhase = ''
@@ -406,18 +407,16 @@ in {
                     # - Node.js runs the same files from /nix/store in ~9ms
                     # - This is a known issue with Bun on macOS + Nix store paths
                     # We still use Bun for compilation since it's fast for that purpose
-                    echo "Pre-compiling TypeScript hooks to JavaScript for Node.js..."
-                    for hook in $out/claude/hooks/*.ts; do
-                      if [ -f "$hook" ]; then
-                        hookname=$(basename "$hook" .ts)
-                        echo "  Compiling $hookname.ts -> $hookname.js"
-                        # Compile with bun (fast), output as node-compatible JS
-                        ${pkgs.bun}/bin/bun build "$hook" --outfile "$out/claude/hooks/$hookname.js" --target node 2>/dev/null
-                        rm "$hook"
-                        # Replace shebang with explicit node path for nix store compatibility
-                        ${pkgs.gnused}/bin/sed -i '1s|^#!.*|#!${pkgs.nodejs}/bin/node|' "$out/claude/hooks/$hookname.js"
-                      fi
-                    done
+                    echo "Pre-compiling TypeScript hooks to JavaScript for Node.js (parallel)..."
+                    export out
+                    find $out/claude/hooks -maxdepth 1 -name "*.ts" | \
+                      ${pkgs.parallel}/bin/parallel --will-cite '
+                        hookname=$(basename {} .ts)
+                        ${pkgs.bun}/bin/bun build {} --outfile '"$out"'/claude/hooks/$hookname.js --target node --minify 2>/dev/null
+                        rm {}
+                        ${pkgs.gnused}/bin/sed -i "1s|^#!.*|#!${pkgs.nodejs}/bin/node|" '"$out"'/claude/hooks/$hookname.js
+                        echo "  ✓ $hookname"
+                      '
                     echo "Hook pre-compilation complete (using Node.js runtime)."
 
         '';
