@@ -535,12 +535,12 @@
                         tool_call = true;
                         reasoning = true;
                         temperature = true;
-                        options = {
-                          num_ctx = 65536;
-                        };
                       };
                       "qwen3-coder:30b" = {
                         name = "Qwen3 Coder 30b";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
                       };
                       "deepseek-r1:32b" = {
                         name = "Deepseek-r1 32b";
