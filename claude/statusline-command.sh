@@ -10,6 +10,8 @@ DA_COLOR="${DA_COLOR:-purple}"  # Color for the assistant name
 # Extract data from JSON input
 current_dir=$(echo "$input" | jq -r '.workspace.current_dir')
 model_name=$(echo "$input" | jq -r '.model.display_name')
+context_size=$(echo "$input" | jq -r '.context_window.context_window_size')
+usage=$(echo "$input" | jq '.context_window.current_usage')
 
 # Get directory name
 dir_name=$(basename "$current_dir")
@@ -52,7 +54,7 @@ esac
 # Line-specific colors
 LINE1_PRIMARY="$BRIGHT_PURPLE"
 LINE1_ACCENT=$'\033[38;2;160;130;210m'
-MODEL_PURPLE=$'\033[38;2;138;99;210m'
+MODEL_COLOR=$'\033[38;2;135;206;250m'
 
 LINE2_PRIMARY="$DARK_BLUE"
 LINE2_ACCENT=$'\033[38;2;110;150;210m'
@@ -100,7 +102,7 @@ done
 # LINE 1 - PURPLE theme with all counts
 printf "%s%s%s%s here, running on %s🧠 %s%s%s in 📁 %s%s%s%s\n" \
     "$DA_DISPLAY_COLOR" "$DA_NAME" "$RESET" "$LINE1_PRIMARY" \
-    "$MODEL_PURPLE" "$model_name" "$RESET" "$LINE1_PRIMARY" \
+    "$MODEL_COLOR" "$model_name" "$RESET" "$LINE1_PRIMARY" \
     "$DIR_COLOR" "$dir_name" "$RESET" "$RESET"
 
 printf "%s🔧 %s Skills%s%s, %s%s🔌 %s MCPs%s%s, and %s%s📚 %s Patterns%s\n" \
@@ -111,3 +113,10 @@ printf "%s🔧 %s Skills%s%s, %s%s🔌 %s MCPs%s%s, and %s%s📚 %s Patterns%s\n
 # LINE 3 - BLUE theme with MCP names
 printf "%s🔌 MCPs%s%s: %s%s%s\n" "$LINE2_PRIMARY" "$RESET" "$LINE2_PRIMARY" "$SEPARATOR_COLOR" "$mcp_names_formatted" "$RESET"
 
+# LINE 4 - Private indicator and usage
+if [ "$usage" != "null" ]; then
+    # Calculate current context from current_usage fields
+    current_tokens=$(echo "$usage" | jq '.input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens')
+    percent_used=$((current_tokens * 100 / context_size))
+    printf "📖 %sInput Context: %s%s%s%%%s (%'d)" "${LINE1_PRIMARY}" "${RESET}" "${DIR_COLOR}" "${percent_used}" "${RESET}" "${current_tokens}"
+fi
