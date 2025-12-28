@@ -1,22 +1,21 @@
-project_doc_fallback_filenames = ["CLAUDE.md"]
+project_doc_fallback_filenames = ["CLAUDE.md", "AGENTS.md"]
 log_user_prompt = false
 
 codex_home = "@paiBasePath@/codex"
 
 instructions = '''
-  Please acknowledge you've read this by saying, "Setup complete." Then go read @@paiBasePath@/gemini/GEMINI.md for base instructions.
+  Go read @@paiBasePath@/claude/skills/CORE/SKILL.md for base instructions. Then acknowledge you've read this by saying, "@assistantName@ setup complete." 
 '''
 
 [model_providers.ollama]
-name = "Ollama"
+name = "ollama"
 base_url = "@ollamaHost@/v1"
 
 [shell_environment_policy]
 inherit = "none"
-set = { PATH = "/usr/bin", MY_FLAG = "1" }
+set = { PATH = "@paiBasePath@/bin:@paiEnvPath@:$PATH", MY_FLAG = "1" }
 ignore_default_excludes = false
-exclude = ["AWS_*", "AZURE_*"]
-include_only = ["PATH", "HOME"]
+exclude = ["AWS_*", "AZURE_*", "GCP_*"]
 
 [features]
 web_search_request = true

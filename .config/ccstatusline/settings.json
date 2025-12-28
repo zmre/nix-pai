@@ -1,0 +1,102 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "2c5f5138-32ff-4010-bd7f-6c456627f3b7",
+        "type": "custom-text",
+        "customText": "@assistantName@",
+        "color": "brightRed",
+        "bold": true
+      },
+      {
+        "id": "0a1fd677-a7a5-4582-a84e-9eb32a1b59da",
+        "type": "custom-command",
+        "color": "cyan",
+        "commandPath": "[ -n \"$PAI_PRIVATE_MODEL\" ] && ccr statusline || jq -r '.model.id'"
+      },
+      {
+        "id": "38a07854-8c04-4c05-aeb2-cd08a83f4e16",
+        "type": "current-working-dir",
+        "rawValue": true,
+        "metadata": {
+          "segments": "2"
+        }
+      },
+      {
+        "id": "5",
+        "type": "git-branch",
+        "color": "magenta",
+        "metadata": {
+          "hideNoGit": "true"
+        }
+      },
+      {
+        "id": "7",
+        "type": "git-changes",
+        "color": "yellow",
+        "metadata": {
+          "hideNoGit": "true"
+        }
+      }
+    ],
+    [
+      {
+        "id": "98602f04-bd91-4d3f-8fb0-1bbedbde37a2",
+        "type": "context-length",
+        "color": "cyan"
+      },
+      {
+        "id": "4d2e84dc-b3f4-4b84-9fba-eb3018cd81f4",
+        "type": "context-percentage",
+        "rawValue": true
+      },
+      {
+        "id": "1d640c6d-9852-4870-b51b-75fad0194f9a",
+        "type": "tokens-input"
+      },
+      {
+        "id": "c0ab1be9-8361-4848-af9b-6758652d3db1",
+        "type": "tokens-output",
+        "color": "brightBlue"
+      },
+      {
+        "id": "0a8f997c-f583-4677-8802-4c8e0b9b81bb",
+        "type": "tokens-cached",
+        "color": ""
+      },
+      {
+        "id": "f9e7b08f-cde5-4ec9-946a-2fd31e2ae084",
+        "type": "tokens-total"
+      }
+    ],
+    [
+      {
+        "id": "d30a4cc6-b9f8-4c10-be4a-f3c9e483f7d8",
+        "type": "custom-text",
+        "customText": "🔧 @skills_count@ Skills, 🔌 @mcps_count@ MCPs, 📚 @fabric_count@ Patterns",
+        "color": "magenta"
+      },
+      {
+        "id": "b7c3e575-827f-4e70-a1ca-aa2947880a9d",
+        "type": "session-clock",
+        "color": "green"
+      }
+    ]
+  ],
+  "flexMode": "full",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [""],
+    "separatorInvertBackground": [false],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false,
+    "theme": "nord-aurora"
+  },
+  "defaultPadding": " "
+}

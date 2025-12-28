@@ -13,7 +13,8 @@
         };
         ollamaServer = lib.mkOption {
           type = lib.types.str;
-          default = "127.0.0.1:11434";
+          default = "http://127.0.0.1:11434";
+          #default = "https://avalon.savannah-basilisk.ts.net:11434";
           description = "Host of your ollama server, if applicable";
         };
         assistantName = lib.mkOption {
@@ -35,6 +36,31 @@
           type = lib.types.str;
           default = "Boss";
           description = "Full name of the user";
+        };
+        automaticPrivacy = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "When enabled, automatically detect private vs public repos and route to local ollama for private work via claude-code-router.";
+        };
+        privateModel = lib.mkOption {
+          type = lib.types.str;
+          # ollama
+          default = "gpt-oss:20b"; # works for thinking and tools
+          #default = "qwen3:30b-thinking"; # think value high not supported
+          #default = "magistral:24b"; # think value high not supported
+          #default = "nemotron-3-nano:latest"; # think value high not supported for this model
+          
+          #default = "qwen3-coder:30b"; # does not support thinking
+          #default = "devstral-small-2:24b"; # does not support thinking
+          #default = "gemma3:27b"; # does not support thinking
+          #default = "deepseek-r1:32b"; # does not support tools
+          #default = "glm4:9b"; # does not support thinking
+
+          # llama-cpp
+          #default = "Qwen3-Coder-30B-A3B-Instruct-Q8_0.gguf";
+          #default = "Qwen_Qwen3-30B-A3B-Instruct-2507-Q8_0.gguf";
+          #default = "Devstral-Small-2507-Q4_K_M.gguf";
+          description = "Model to use when routing to ollama in private mode";
         };
         extraSecrets = lib.mkOption {
           type = lib.types.attrsOf lib.types.str;
@@ -212,6 +238,7 @@
                         "Bash(bun:*)"
                         "Bash(cargo:*)"
                         "Bash(rustc:*)"
+                        "Bash(readlink:*)"
                         "Bash(grep:*)"
                         "Bash(rg:*)"
                         "Bash(fabric:*)"
@@ -233,7 +260,7 @@
                         "WebFetch(domain:docs.rs)"
                         "Read(./**)"
                         "Read(/tmp/**)"
-                        "Bash(cat @paiBaseBath@:*)"
+                        "Bash(cat @paiBasePath@:*)"
                         "Read(/@paiBasePath@/claude/**)"
                         "Glob(/@paiBasePath@/claude/*)"
                         "Grep(/@paiBasePath@/claude/*)"
@@ -359,7 +386,8 @@
                 type = lib.types.attrsOf lib.types.anything;
                 default = {
                   type = "command";
-                  command = "bash @paiBasePath@/claude/statusline-command.sh";
+                  #command = "bash @paiBasePath@/claude/statusline-command.sh";
+                  command = "HOME=@paiBasePath@ ccstatusline";
                 };
                 description = "Status line configuration";
               };
@@ -401,7 +429,7 @@
               };
               model = lib.mkOption {
                 type = lib.types.str;
-                default = "ollama/qwen3:30b-a3b";
+                default = "ollama/gpt-oss:20b";
                 description = "Default model to use (format: provider/model)";
               };
               tui = lib.mkOption {
@@ -530,7 +558,34 @@
                           num_ctx = 65536;
                         };
                       };
-                      "qwen3:30b-a3b" = {
+                      "devstral-small-2:24b" = {
+                        name = "Devstral Small 24b";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 32768;
+                        };
+                      };
+                      "nemotron-3-nano:latest" = {
+                        name = "Nemotron 3 Nano";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "ministral-3:14b" = {
+                        name = "Ministral 3 14b";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 32768;
+                        };
+                      };
+                      "qwen3:30b" = {
                         name = "Qwen3 30b A3B";
                         tool_call = true;
                         reasoning = true;
@@ -541,6 +596,9 @@
                         tool_call = true;
                         reasoning = true;
                         temperature = true;
+                        options = {
+                          num_ctx = 100000;
+                        };
                       };
                       "deepseek-r1:32b" = {
                         name = "Deepseek-r1 32b";
@@ -557,8 +615,8 @@
                       "llama3:8b" = {
                         name = "Llama3 8b";
                       };
-                      "llama3.1:70b" = {
-                        name = "Llama3.1 70b";
+                      "glm4:9b" = {
+                        name = "GLM4";
                       };
                     };
                   };

@@ -13,6 +13,11 @@ model_name=$(echo "$input" | jq -r '.model.display_name')
 context_size=$(echo "$input" | jq -r '.context_window.context_window_size')
 usage=$(echo "$input" | jq '.context_window.current_usage')
 
+# Check for private mode
+if [ "$PAI_PRIVATE_MODE" = "true" ]; then
+    model_name="${PAI_PRIVATE_MODEL:-$model_name} [PRIVATE]"
+fi
+
 # Get directory name
 dir_name=$(basename "$current_dir")
 
