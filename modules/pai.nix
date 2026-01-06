@@ -75,16 +75,6 @@ in {
           }
         else null;
 
-      # Override gemini-cli with fixed npmDepsHash (upstream hash is outdated)
-      geminiCliFixed = let
-        original = inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli;
-        newNpmDeps = pkgs.fetchNpmDeps {
-          src = original.src;
-          name = "gemini-cli-${original.version}-npm-deps";
-          hash = "sha256-nEiB6wwRP2zpnm3h8UjWGOdyvdgMsVWKb8L69R61c5E=";
-        };
-      in original.overrideAttrs (old: { npmDeps = newNpmDeps; });
-
       corePackages = with pkgs;
         [
           bun
@@ -103,7 +93,7 @@ in {
         ]
         ++ lib.optionals perSystemConfig.pai.fabric.enable [fabricWrapped.package]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableGemini [
-          geminiCliFixed
+          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli
         ]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableOpencode [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.opencode
