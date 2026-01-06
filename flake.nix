@@ -12,7 +12,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     # for some things not available in nixpkgs, but also it stays up-to-date more
     nix-ai-tools.url = "github:numtide/llm-agents.nix";
-    nix-ai-tools.inputs.nixpkgs.follows = "nixpkgs";
+    # do not have nix-ai-tools follow nixpkgs
     # fabric patterns source
     fabric = {
       url = "github:danielmiessler/fabric";
