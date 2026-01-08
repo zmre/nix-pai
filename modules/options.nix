@@ -49,7 +49,7 @@
           #default = "qwen3:30b-thinking"; # think value high not supported
           #default = "magistral:24b"; # think value high not supported
           #default = "nemotron-3-nano:latest"; # think value high not supported for this model
-          
+
           #default = "qwen3-coder:30b"; # does not support thinking
           #default = "devstral-small-2:24b"; # does not support thinking
           #default = "gemma3:27b"; # does not support thinking
@@ -198,6 +198,22 @@
                 type = lib.types.enum ["default" "explanatory" "learning"];
                 default = "default";
                 description = "https://code.claude.com/docs/en/output-styles";
+              };
+              attributions = lib.mkOption {
+                type = lib.types.submodule {
+                  options = {
+                    commit = lib.mkOption {
+                      type = lib.types.str;
+                      default = "🤖 Co-Authored-By: @assistantName@";
+                      description = "Attribution for git commits, including any trailers. Empty string hides commit attribution";
+                    };
+                    pr = lib.mkOption {
+                      type = lib.types.str;
+                      default = "🤖 Generated with @assistantName@";
+                      description = "Attribution for pull request descriptions. Empty string hides pull request attribution";
+                    };
+                  };
+                };
               };
               permissions = lib.mkOption {
                 type = lib.types.submodule {
