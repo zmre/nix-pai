@@ -13,7 +13,7 @@ in {
       perSystemConfig = config;
 
       # Generate settings.json content from merged settings
-      settingsJsonContent = builtins.toJSON perSystemConfig.pai.claudeSettings;
+      settingsJsonContent = builtins.toJSON (lib.filterAttrsRecursive (name: value: value != null) perSystemConfig.pai.claudeSettings);
 
       # Generate mcp.json content from mcpServers option
       # Filter out null values from each server config to keep JSON clean

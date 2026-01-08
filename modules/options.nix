@@ -213,7 +213,7 @@
                       apply = v:
                         if v
                         then "disable"
-                        else "";
+                        else null;
                       description = "Whether to disable bypass permissions mode";
                     };
                     defaultMode = lib.mkOption {
