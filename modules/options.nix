@@ -199,7 +199,9 @@
                 default = "default";
                 description = "https://code.claude.com/docs/en/output-styles";
               };
-              attributions = lib.mkOption {
+              attribution = lib.mkOption {
+                default = {};
+                description = "Attribution settings for git/github actions";
                 type = lib.types.submodule {
                   options = {
                     commit = lib.mkOption {
