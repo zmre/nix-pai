@@ -186,6 +186,7 @@
                 type = lib.types.attrsOf lib.types.str;
                 default = {
                   CLAUDE_CODE_MAX_OUTPUT_TOKENS = "64000";
+                  CLAUDE_CODE_ENABLE_TELEMETRY= "0";
                 };
                 description = "Environment variables to set";
               };
