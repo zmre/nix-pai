@@ -519,7 +519,59 @@ in {
       };
     in {
       packages.pai = pai;
-      #config.paipackages.pai = pai;
+
+      # Set base hook configurations via lib.mkBefore (enables lib.mkAfter merging)
+      # Users can use lib.mkAfter to append their hooks after these base hooks
+      pai.claudeSettings.hooks = {
+        UserPromptSubmit = lib.mkBefore [
+          {
+            hooks = [
+              {
+                type = "command";
+                command = "@paiBasePath@/claude/hooks/update-tab-titles.js";
+              }
+            ];
+          }
+        ];
+        SessionStart = lib.mkBefore [
+          {
+            hooks = [
+              {
+                type = "command";
+                command = "@paiBasePath@/claude/hooks/load-core-context.js";
+              }
+              {
+                type = "command";
+                command = "@paiBasePath@/claude/hooks/initialize-pai-session.js";
+              }
+            ];
+          }
+        ];
+        Stop = lib.mkBefore [
+          {
+            hooks = [
+              {
+                type = "command";
+                command = "@paiBasePath@/claude/hooks/stop-hook.js";
+              }
+              {
+                type = "command";
+                command = "@paiBasePath@/claude/hooks/capture-all-events.js --event-type Stop";
+              }
+            ];
+          }
+        ];
+        PermissionRequest = lib.mkBefore [
+          {
+            hooks = [
+              {
+                type = "command";
+                command = "@paiBasePath@/claude/hooks/permission-prompt-hook.js";
+              }
+            ];
+          }
+        ];
+      };
     };
   };
 }

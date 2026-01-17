@@ -419,58 +419,49 @@
                 description = "List of enabled MCP JSON servers";
               };
               hooks = lib.mkOption {
-                type = lib.types.attrsOf (lib.types.listOf lib.types.anything);
-                default = {
-                  UserPromptSubmit = [
-                    {
-                      hooks = [
-                        {
-                          type = "command";
-                          command = "@paiBasePath@/claude/hooks/update-tab-titles.js";
-                        }
-                      ];
-                    }
-                  ];
-                  SessionStart = [
-                    {
-                      hooks = [
-                        {
-                          type = "command";
-                          command = "@paiBasePath@/claude/hooks/load-core-context.js";
-                        }
-                        {
-                          type = "command";
-                          command = "@paiBasePath@/claude/hooks/initialize-pai-session.js";
-                        }
-                      ];
-                    }
-                  ];
-                  Stop = [
-                    {
-                      hooks = [
-                        {
-                          type = "command";
-                          command = "@paiBasePath@/claude/hooks/stop-hook.js";
-                        }
-                        {
-                          type = "command";
-                          command = "@paiBasePath@/claude/hooks/capture-all-events.js --event-type Stop";
-                        }
-                      ];
-                    }
-                  ];
-                  PermissionRequest = [
-                    {
-                      hooks = [
-                        {
-                          type = "command";
-                          command = "@paiBasePath@/claude/hooks/permission-prompt-hook.js";
-                        }
-                      ];
-                    }
-                  ];
+                type = lib.types.submodule {
+                  # Allow arbitrary additional event types beyond those explicitly defined
+                  freeformType = lib.types.attrsOf (lib.types.listOf lib.types.anything);
+                  options = {
+                    UserPromptSubmit = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired when user submits a prompt. Use lib.mkAfter to append.";
+                    };
+                    SessionStart = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired at session start. Use lib.mkAfter to append.";
+                    };
+                    Stop = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired when session stops. Use lib.mkAfter to append.";
+                    };
+                    PermissionRequest = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired on permission requests. Use lib.mkAfter to append.";
+                    };
+                    PostToolUse = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired after tool use. Use lib.mkAfter to append.";
+                    };
+                    PreToolUse = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired before tool use. Use lib.mkAfter to append.";
+                    };
+                    Notification = lib.mkOption {
+                      type = lib.types.listOf lib.types.anything;
+                      default = [];
+                      description = "Hooks fired on notifications. Use lib.mkAfter to append.";
+                    };
+                  };
                 };
-                description = "Hook configurations for various Claude Code events. Use lib.mkAfter to append defaults";
+                default = {};
+                description = "Hook configurations for Claude Code events. Use lib.mkAfter to append to base hooks.";
               };
               statusLine = lib.mkOption {
                 type = lib.types.attrsOf lib.types.anything;
