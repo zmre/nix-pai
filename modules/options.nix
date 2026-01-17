@@ -248,39 +248,106 @@
                         "Read(/@paiBasePath@**)"
                         "Glob(/@paiBasePath@*)"
                         "Grep(/@paiBasePath@*)"
-                        "Skill(*)"
+                        "Skill(*)" # not sure which should work
+                        "Skill(:*)"
+                        "Skill(claude:*)"
                         "mcp__Ref"
+
+                        # Common utilities
+                        "Bash(find:*)"           # File searching (potentially dangerous)
+                        "Bash(ls:*)"
+                        "Bash(tree:*)"
+                        "Bash(wc:*)"
+                        "Bash(head:*)"
+                        "Bash(tail:*)"
+                        "Bash(diff:*)"
+                        "Bash(sort:*)"
+                        "Bash(uniq:*)"
+                        "Bash(cat:*)"
+                        "Bash(grep:*)"
+                        "Bash(jq:*)"
+
+                        # Common build commands
+                        "Bash(configure:*)"
+                        "Bash(make:*)"
+                        "Bash(just:*)"
+
+                        # Node.js ecosystem
                         "Bash(npm:*)"
-                        "Bash(git:*)"
-                        "Bash(nix build:*)"
-                        "Bash(nix flake:*)"
-                        "Bash(nix develop:*)"
-                        "Bash(git stash:*)"
-                        "Bash(sbt:*)"
+                        "Bash(pnpm:*)"
+                        "Bash(npx:*)"
+                        "Bash(yarn:*)"
+                        "Bash(node:*)"
                         "Bash(bun:*)"
+                        "Bash(tsc:*)"
+
+                        # Scala
+                        "Bash(sbt:*)"
+                        "Bash(scala:*)"
+                        "Bash(scalac:*)"
+
+                        # Swift
+                        "Bash(xcodebuild:*)"
+                        "Bash(xcodegen generate:*)"
+                        "Bash(log show:*)"
+                        "Bash(log stream:*)"
+                        "Bash(swift:*)"
+                        "Bash(swiftc:*)"
+                        "Bash(swiftformat:*)"
+                        "Bash(swift-format:*)"
+                        "Bash(swiftlint:*)"
+                        "Bash(plutil:*)"
+                        "Bash(mdls:*)"
+
+                        # Git expansion
+                        "Bash(git status:*)"
+                        "Bash(git diff:*)"
+                        "Bash(git log:*)"
+                        "Bash(git branch:*)"
+                        "Bash(git checkout:*)"
+                        "Bash(git stash:*)"
+                        "Bash(git show:*)"
+                        "Bash(git fetch:*)"
+
+                        # Nix
+                        "Bash(nix:*)"            # All nix commands
+
+                        # Python
+                        "Bash(pip:*)"
+                        "Bash(uv:*)"
+                        
+                        # Rust
                         "Bash(cargo:*)"
                         "Bash(rustc:*)"
+                        "Bash(/target/release/:*)"
+                        "Bash(/target/debug/:*)"
+                        
+                        # Misc utilities
+                        "Bash(which:*)"          # Command location
+                        "Bash(type:*)"           # Command type
+                        "Bash(file:*)"           # File type detection
+                        "Bash(stat:*)"           # File statistics
+                        "Bash(realpath:*)"       # Path resolution
+                        "Bash(dirname:*)"        # Directory extraction
+                        "Bash(basename:*)"       # Basename extraction
                         "Bash(readlink:*)"
-                        "Bash(grep:*)"
                         "Bash(rg:*)"
+                        "Bash(magick:*)"
+                        "Bash(vm_stat:*)"
+                        "Bash(wc:*)"
+
+                        # Other AI tools
                         "Bash(fabric:*)"
                         "Bash(gemini:*)"
                         "Bash(codex:*)"
-                        "Bash(make:*)"
-                        "Bash(ls:*)"
-                        "Bash(configure:*)"
-                        "Bash(build:*)"
-                        "Bash(jq:*)"
-                        "Bash(tsc:*)"
-                        "Bash(cat:*)"
-                        "Bash(find:*)"
-                        "Bash(pip:*)"
-                        "Bash(magick:*)"
-                        "Bash(uv:*)"
-                        "Bash(/target/release/:*)"
-                        "Bash(/target/debug/:*)"
+
+                        # Web
+                        "WebSearch"
                         "WebFetch(domain:docs.rs)"
                         "WebFetch(domain:github.com)"
+                        "WebFetch(domain:*)"
+
+                        # Misc
                         "Read(/**)"
                         "Read(/tmp/**)"
                         "Bash(cat @paiBasePath@:*)"
@@ -293,8 +360,6 @@
                         "Edit(//tmp/**)"
                         "Glob(./*)"
                         "Grep(./*)"
-                        "WebFetch(domain:*)"
-                        "WebSearch"
                         "NotebookEdit(./*)"
                       ];
                       description = "Tool permissions to allow. Use lib.mkAfter [...] to append to defaults.";
@@ -304,6 +369,8 @@
                       default = [
                         "Bash(sudo:*)"
                         "Bash(git push:*)"
+                        "Bash(curl:*)"
+                        "Bash(wget:*)"
                         "Bash(rm:*)"
                         "Bash(git rm:*)"
                         "Read(./.env)"
@@ -403,7 +470,7 @@
                     }
                   ];
                 };
-                description = "Hook configurations for various Claude Code events";
+                description = "Hook configurations for various Claude Code events. Use lib.mkAfter to append defaults";
               };
               statusLine = lib.mkOption {
                 type = lib.types.attrsOf lib.types.anything;
