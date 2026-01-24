@@ -75,12 +75,22 @@ in {
           }
         else null;
 
-      corePackages = with pkgs;
+      # hiddenPackages are made available only to the ai assistant and not generally
+      hiddenPackages = with pkgs;
         [
           bun
           jq
           curl # Required for wrapper script health checks
           nodejs # Required for hooks - Node.js runs nix store files instantly while bun has ~5s delay
+        ]
+        ++ perSystemConfig.pai.extraPackages
+        ++ lib.optionals stdenv.isLinux [libsecret]; # libsecret provides secret-tool on linux
+
+      localPath = pkgs.lib.makeBinPath hiddenPackages;
+
+      # corePackages are made available to anyone who has installed this pai
+      corePackages =
+        [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
           #inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.openskills
@@ -100,9 +110,7 @@ in {
         ++ lib.optionals perSystemConfig.pai.otherTools.enableOpencode [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.opencode
           #ollama
-        ]
-        ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
-        ++ perSystemConfig.pai.extraPackages;
+        ];
 
       binariesToWrap =
         ["claude"]
@@ -136,7 +144,7 @@ in {
         ${lib.concatStringsSep " " (lib.mapAttrsToList (
           key: value: ''--run 'export ${key}="${secretLookup value}"' ''
         ) (secrets binary))} \
-          --prefix PATH : "$out/bin" \
+          --prefix PATH : "$out/bin:${localPath}" \
           --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
           --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
           --set CODEX_MANAGED_CONFIG_PATH $out/codex/managed_config.toml \
@@ -159,7 +167,7 @@ in {
         src = localsrc;
         # preferLocalBuild = true;
         # allowSubstitutes = false;
-        buildInputs = corePackages;
+        buildInputs = corePackages ++ hiddenPackages;
         nativeBuildInputs = [
           #pkgs.makeBinaryWrapper
           pkgs.makeWrapper
