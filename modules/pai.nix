@@ -83,7 +83,9 @@ in {
           nodejs # Required for hooks - Node.js runs nix store files instantly while bun has ~5s delay
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
-          #nix-ai-tools.package.${pkgs.stdenv.hostPlatform.system}.openskills
+          #inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.openskills
+          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.agent-browser
+          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.spec-kit
         ]
         ++ lib.optionals perSystemConfig.pai.automaticPrivacy [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code-router

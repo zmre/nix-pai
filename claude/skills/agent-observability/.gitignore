@@ -1,6 +1,0 @@
-node_modules/
-dist/
-.env
-*.log
-apps/server/events.db
-apps/server/events.db-*
