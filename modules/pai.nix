@@ -152,13 +152,15 @@ in {
           --set-default OLLAMA_API_URL "${perSystemConfig.pai.ollamaServer}"
       '';
 
-      envPathBase = pkgs.lib.makeBinPath (with pkgs; [
-        gawk
-        coreutils
-        jq
-        bun
-        curl
-      ]);
+      envPathBase = pkgs.lib.makeBinPath (with pkgs;
+        [
+          gawk
+          coreutils
+          jq
+          bun
+          curl
+        ]
+        ++ hiddenPackages);
 
       pai = pkgs.stdenvNoCC.mkDerivation {
         # runCommand perSystemConfig.pai.commandName {
