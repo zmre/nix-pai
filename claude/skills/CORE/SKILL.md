@@ -59,6 +59,9 @@ Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUT
 
 When in a programming project folder, favor using the **Engineer** sub-agent and in general, if a sub-agent located in `@paiBasePath@/claude/agents` fits, you must use it.
 
+### Use Nix Skill
+
+When in a project folder with flake.nix or when trying to install programs, you MUST READ the Nix skill first.
 
 ---
 

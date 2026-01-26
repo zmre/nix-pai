@@ -36,6 +36,21 @@ The PAI module creates a single derivation that bundles:
 
 The result is a single package where running the custom command (e.g., `iris` or `jv`) starts claude with full PAI configuration.
 
+### Package Categories
+
+The flake separates packages into two categories to avoid conflicts with user-installed tools:
+
+**corePackages** - Globally available when PAI is installed:
+- AI CLI tools (claude-code, codex, gemini-cli, fabric-ai)
+- ccstatusline and other PAI-specific utilities
+
+**hiddenPackages** - Available only to the AI assistant via PATH:
+- Runtime dependencies: `bun`, `jq`, `curl`, `nodejs`
+- User's `extraPackages`
+- Linux-specific: `libsecret` (for secret-tool)
+
+This separation prevents PAI's bundled tools (like `jq` or `bun`) from conflicting with versions the user may have installed system-wide. The `localPath` variable constructs a PATH containing only hiddenPackages, which is injected into AI tool wrappers.
+
 ### Secrets Management
 
 Secrets are loaded at runtime (not build time) via wrappers:
@@ -197,10 +212,13 @@ Per the CORE skill configuration:
 
 ### Adding New Tools
 
-1. Add package to `corePackages` list in `pai.nix`
-2. Optionally add to `binariesToWrap` if needs secrets
-3. Add enable option in `modules/options.nix` under `otherTools`
-4. Guard with `lib.optionals` in package list
+1. Determine package category:
+   - **corePackages**: For AI CLI tools that should be globally available
+   - **hiddenPackages**: For dependencies that should only be available to AI wrappers (to avoid conflicts)
+2. Add package to the appropriate list in `pai.nix`
+3. Optionally add to `binariesToWrap` if the tool needs secrets injected
+4. Add enable option in `modules/options.nix` under `otherTools` for optional tools
+5. Guard with `lib.optionals` in package list for conditional inclusion
 
 ### Testing Changes
 

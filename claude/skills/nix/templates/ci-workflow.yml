@@ -1,0 +1,77 @@
+# GitHub Actions CI Workflow with Nix and Cachix
+# Copy to .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+# Cancel in-progress runs for the same ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast format check runs first
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+      - name: Check formatting
+        run: nix build .#fmt
+
+  # Main build matrix
+  build:
+    needs: format-check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@v17
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+
+      # Optional: Cachix for sharing builds across CI runs
+      - uses: cachix/cachix-action@v16
+        with:
+          name: your-cache-name  # Replace with your cachix cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extraPullNames: nix-community
+
+      - name: Build
+        run: nix build
+
+      - name: Run tests
+        run: nix build .#tests
+
+      - name: Run clippy (if Rust)
+        run: nix build .#clippy
+        continue-on-error: true  # Remove this once clippy passes
+
+      # Push successful builds to cachix
+      - name: Push to Cachix
+        if: github.event_name == 'push'
+        run: |
+          nix build --json | jq -r '.[].outputs | to_entries[].value' | cachix push your-cache-name
+
+  # Full flake check (runs all checks defined in flake)
+  flake-check:
+    needs: format-check
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v17
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+      - name: Flake check
+        run: nix flake check
