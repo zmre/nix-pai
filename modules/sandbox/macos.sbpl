@@ -1,0 +1,66 @@
+(version 1)
+
+; Deny by default
+(deny default)
+
+; Process control
+(allow process-exec)
+(allow process-fork)
+(allow signal (target same-sandbox))
+
+; User preferences
+(allow user-preference-read)
+
+; Allow writing to /dev/null only (base restriction)
+(allow file-write* (literal "/dev/null"))
+
+; System calls needed by Node.js/Claude
+(allow sysctl-read)
+
+; IPC needed for Python multiprocessing, etc.
+(allow ipc-posix-sem)
+
+; Process info within sandbox
+(allow process-info* (target same-sandbox))
+
+; Mach lookups for system services
+(allow mach-lookup
+    (global-name "com.apple.system.opendirectoryd.libinfo")
+    (global-name "com.apple.PowerManagement.control"))
+
+; IOKit for power management
+(allow iokit-open (iokit-registry-entry-class "RootDomainUserClient"))
+
+; Pseudo-TTY for interactive use
+(allow pseudo-tty)
+(allow file-ioctl
+    (literal "/dev/ptmx")
+    (regex #"^/dev/ttys"))
+
+; === DYNAMIC RULES APPENDED BY WRAPPER ===
+; The wrapper script appends specific path-based permissions:
+;
+; Read access (system paths - broad but excludes /Users):
+;   - / (root literal), /System, /usr, /bin, /sbin
+;   - /Library, /AppleInternal, /Applications, /Volumes
+;   - /private, /var, /tmp, /etc, /dev, /opt, /cores
+;   - /nix (all nix dependencies)
+;   - @paiBasePath@ (PAI installation)
+;   - $RESOLVED_PROJECT (project directory - can be under /Users)
+;   - $RESOLVED_PARENT (parent directory for monorepos)
+;   - $RESOLVED_TMP (sandbox home)
+;
+; Write access (project and temp only):
+;   - $RESOLVED_PROJECT
+;   - $RESOLVED_TMP
+;   - $SLASH_TMP (/private/tmp)
+;
+; BLOCKED (not in allow list):
+;   - /Users/* (except specific project path)
+;   - ~/.ssh, ~/.aws, ~/.gnupg, ~/.kube
+;   - All other user home directories
+;
+; (allow file-read-metadata) - broadly allowed for dyld/stat
+; (allow network-outbound)
+; (allow network-inbound)
+; (allow system-socket)

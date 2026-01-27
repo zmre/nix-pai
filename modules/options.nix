@@ -110,6 +110,32 @@
           };
         };
 
+        sandboxYolo = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Enable the sandbox-yolo wrapper for autonomous operation in isolated environment";
+          };
+
+          additionalReadWritePaths = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [];
+            description = "Additional paths to allow read/write access in sandbox";
+          };
+
+          additionalReadOnlyPaths = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [];
+            description = "Additional paths to allow read-only access in sandbox";
+          };
+
+          denyPaths = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = ["~/.ssh" "~/.gnupg" "~/.aws" "~/.kube" "~/.config/gcloud"];
+            description = "Paths to explicitly deny access in sandbox";
+          };
+        };
+
         # MCP servers configuration - generated as mcp.json at build time
         mcpServers = lib.mkOption {
           type = lib.types.attrsOf (lib.types.submodule {

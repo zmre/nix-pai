@@ -52,6 +52,13 @@
             description = "Personal AI Infrastructure (PAI) - Private/Local ${config.pai.assistantName} using OpenCode";
           };
         };
+        apps.sandbox-yolo = {
+          type = "app";
+          program = "${config.packages.pai}/bin/${config.pai.commandName}-sandbox-yolo";
+          meta = {
+            description = "Personal AI Infrastructure (PAI) - Sandboxed YOLO mode for ${config.pai.assistantName}";
+          };
+        };
       };
     });
 }

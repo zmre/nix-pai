@@ -57,6 +57,18 @@ in {
       mcpJsonFile = pkgs.writeText "mcp.json" mcpJsonContent;
       opencodeJsonFile = pkgs.writeText "opencode-config.json" opencodeJsonContent;
 
+      # Generate sandbox settings with bypass mode allowed
+      sandboxSettingsJsonContent = builtins.toJSON (
+        lib.filterAttrsRecursive (name: value: value != null) (
+          perSystemConfig.pai.claudeSettings // {
+            permissions = (perSystemConfig.pai.claudeSettings.permissions or {}) // {
+              disableBypassPermissionsMode = null;  # Allow bypass in sandbox
+            };
+          }
+        )
+      );
+      sandboxSettingsJsonFile = pkgs.writeText "sandbox-settings.json" sandboxSettingsJsonContent;
+
       # Import fabric module with necessary dependencies
       fabricWrapped = import ./fabric.nix {
         inherit pkgs lib secretLookup perSystemConfig;
@@ -84,7 +96,8 @@ in {
           nodejs # Required for hooks - Node.js runs nix store files instantly while bun has ~5s delay
         ]
         ++ perSystemConfig.pai.extraPackages
-        ++ lib.optionals stdenv.isLinux [libsecret]; # libsecret provides secret-tool on linux
+        ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
+        ++ lib.optionals (stdenv.isLinux && perSystemConfig.pai.sandboxYolo.enable) [bubblewrap];
 
       localPath = pkgs.lib.makeBinPath hiddenPackages;
 
@@ -254,6 +267,26 @@ in {
           ''}
 
           ###########################################
+          # SECTION 4.5: Create sandbox-yolo wrapper (if enabled)
+          ###########################################
+          ${lib.optionalString perSystemConfig.pai.sandboxYolo.enable ''
+            # Create sandbox directory
+            mkdir -p $out/claude/sandbox
+
+            # Copy Seatbelt profile for macOS
+            cp "${localsrc}/modules/sandbox/macos.sbpl" $out/claude/sandbox/
+            chmod u+w $out/claude/sandbox/macos.sbpl
+
+            # Copy sandbox wrapper script
+            cp "${localsrc}/modules/sandbox-yolo-wrapper.sh" $out/bin/${perSystemConfig.pai.commandName}-sandbox-yolo
+            chmod +x $out/bin/${perSystemConfig.pai.commandName}-sandbox-yolo
+
+            # Copy sandbox settings.json
+            cp ${sandboxSettingsJsonFile} $out/claude/sandbox-settings.json
+            chmod u+w $out/claude/sandbox-settings.json
+          ''}
+
+          ###########################################
           # SECTION 5: Copy config files and directories
           ###########################################
           # Copy in all the settings files, excluding fabric patterns (handled separately)
@@ -397,6 +430,22 @@ in {
                 --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
                 --replace-quiet @paiBasePath@ "$out" \
                 --replace-quiet @privateModel@ '${perSystemConfig.pai.privateModel}'
+          ''}
+
+          # Sandbox wrapper substitutions (if enabled)
+          ${lib.optionalString perSystemConfig.pai.sandboxYolo.enable ''
+            substituteInPlace $out/bin/${perSystemConfig.pai.commandName}-sandbox-yolo \
+                --replace-quiet @paiBasePath@ "$out" \
+                --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+                --replace-quiet @assistantColor@ '${perSystemConfig.pai.assistantColor}' \
+                --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
+                --replace-quiet @automaticPrivacy@ '${lib.boolToString perSystemConfig.pai.automaticPrivacy}' \
+                --replace-quiet @privateModel@ '${perSystemConfig.pai.privateModel}' \
+                --replace-quiet @paiEnvPath@ '${envPathBase}'
+
+            substituteInPlace $out/claude/sandbox-settings.json \
+                --replace-quiet @paiBasePath@ "$out" \
+                --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}'
           ''}
 
           # Settings and MCP config substitutions
