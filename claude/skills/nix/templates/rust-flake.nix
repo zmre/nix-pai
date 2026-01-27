@@ -127,6 +127,7 @@
         packages = with pkgs; [
           cargo-watch
           cargo-audit
+          cargo-fuzz
           rust-analyzer
         ];
 
