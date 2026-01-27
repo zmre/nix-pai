@@ -22,102 +22,115 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, rust-overlay, crane, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        overlays = [ (import rust-overlay) ];
-        pkgs = import nixpkgs { inherit system overlays; };
+  outputs = {
+    self,
+    nixpkgs,
+    rust-overlay,
+    crane,
+    flake-utils,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      overlays = [(import rust-overlay)];
+      pkgs = import nixpkgs {inherit system overlays;};
 
-        # Get rust toolchain from rust-toolchain.toml
-        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+      # Get rust toolchain from rust-toolchain.toml
+      rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
-        # Create crane lib with our toolchain
-        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+      # Create crane lib with our toolchain
+      craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
-        # Read version from Cargo.toml
-        cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
-        version = cargoToml.package.version;
+      # Read version from Cargo.toml
+      cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+      version = cargoToml.package.version;
 
-        # Source filtering - include Rust sources and assets
-        src = pkgs.lib.cleanSourceWith {
-          src = ./.;
-          filter = path: type:
-            (craneLib.filterCargoSources path type)
-            # Add additional patterns as needed:
-            # || (builtins.match ".*\\.md$" path != null)
-            # || (builtins.match ".*\\.json$" path != null)
-            ;
-        };
+      # Source filtering - include Rust sources and assets
+      src = pkgs.lib.cleanSourceWith {
+        src = ./.;
+        filter =
+          path: type: (craneLib.filterCargoSources path type)
+          # Add additional patterns as needed:
+          # || (builtins.match ".*\\.md$" path != null)
+          # || (builtins.match ".*\\.json$" path != null)
+          ;
+      };
 
-        # Common build inputs
-        commonNativeBuildInputs = with pkgs; [
-          pkg-config
-        ];
+      # Common build inputs
+      commonNativeBuildInputs = with pkgs; [
+        pkg-config
+      ];
 
-        commonBuildInputs = with pkgs; [
+      commonBuildInputs = with pkgs;
+        [
           # Add runtime dependencies here
           # openssl
-        ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+        ]
+        ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
           pkgs.darwin.apple_sdk.frameworks.Security
           pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
           pkgs.libiconv
-        ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+        ]
+        ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
           # Linux-specific deps
         ];
 
-        # Common args for all builds
-        commonArgs = {
-          inherit src version;
-          pname = "my-project";
-          strictDeps = true;
-          nativeBuildInputs = commonNativeBuildInputs;
-          buildInputs = commonBuildInputs;
-        };
+      # Common args for all builds
+      commonArgs = {
+        inherit src version;
+        pname = "my-project";
+        strictDeps = true;
+        nativeBuildInputs = commonNativeBuildInputs;
+        buildInputs = commonBuildInputs;
+      };
 
-        # Build dependencies separately (cached)
-        cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {
+      # Build dependencies separately (cached)
+      cargoArtifacts = craneLib.buildDepsOnly (commonArgs
+        // {
           src = craneLib.cleanCargoSource ./.;
         });
-      in
-      {
-        # Main package
-        packages.default = craneLib.buildPackage (commonArgs // {
+    in {
+      # Main package
+      packages.default = craneLib.buildPackage (commonArgs
+        // {
           inherit cargoArtifacts;
           cargoExtraArgs = "--locked";
           doCheck = false; # Tests run separately
         });
 
-        # Clippy check
-        packages.clippy = craneLib.cargoClippy (commonArgs // {
+      # Clippy check
+      packages.clippy = craneLib.cargoClippy (commonArgs
+        // {
           inherit cargoArtifacts;
           cargoClippyExtraArgs = "--all-targets -- -D warnings";
         });
 
-        # Tests
-        packages.tests = craneLib.cargoTest (commonArgs // {
+      # Tests
+      packages.tests = craneLib.cargoTest (commonArgs
+        // {
           inherit cargoArtifacts;
         });
 
-        # Format check
-        packages.fmt = craneLib.cargoFmt {
-          inherit src;
-        };
+      # Format check
+      packages.fmt = craneLib.cargoFmt {
+        inherit src;
+      };
 
-        # Checks for `nix flake check`
-        checks = {
-          inherit (self.packages.${system}) default clippy fmt tests;
-        };
+      # Checks for `nix flake check`
+      checks = {
+        inherit (self.packages.${system}) default clippy fmt tests;
+      };
 
-        # Development shell
-        devShells.default = craneLib.devShell {
-          checks = self.checks.${system};
-          inputsFrom = [ self.packages.${system}.default ];
-          packages = with pkgs; [
-            cargo-watch
-            rust-analyzer
-          ];
+      # Development shell
+      devShells.default = craneLib.devShell {
+        checks = self.checks.${system};
+        inputsFrom = [self.packages.${system}.default];
+        packages = with pkgs; [
+          cargo-watch
+          cargo-audit
+          rust-analyzer
+        ];
 
-          RUST_LOG = "debug";
-        };
-      });
+        RUST_LOG = "debug";
+      };
+    });
 }
