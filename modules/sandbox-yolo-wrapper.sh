@@ -97,17 +97,28 @@ fi
 ###########################################
 mkdir -p "$SANDBOX_HOME/.claude"
 
-# Claude needs ~/.claude.json to exist. If user has one, copy it; otherwise initialize
+# Get real home directory
 REAL_HOME="${HOME:-$(eval echo ~)}"
-if [ -f "$REAL_HOME/.claude.json" ]; then
-    cp "$REAL_HOME/.claude.json" "$SANDBOX_HOME/.claude.json"
-else
-    # Initialize Claude config by running --help (creates .claude.json)
-    echo "Initializing Claude configuration..."
-    HOME="$SANDBOX_HOME" @paiBasePath@/bin/claude --help >/dev/null 2>&1 || true
+
+# Extract OAuth credentials from macOS Keychain (BEFORE entering sandbox)
+# Claude Code on macOS stores OAuth tokens in Keychain, not in files
+# We extract and write to .credentials.json (Linux-style) for sandbox use
+if [[ "$PLATFORM" == "Darwin" ]]; then
+    CREDS=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null || true)
+    if [ -n "$CREDS" ]; then
+        echo "$CREDS" > "$SANDBOX_HOME/.claude/.credentials.json"
+    else
+        echo "Warning: Could not extract Claude credentials from Keychain"
+        echo "Run 'claude' outside sandbox first to authenticate"
+    fi
 fi
 
-# Copy user's .claude directory contents if they exist (for any cached data)
+# Copy .claude.json for config/preferences (not auth)
+if [ -f "$REAL_HOME/.claude.json" ]; then
+    cp "$REAL_HOME/.claude.json" "$SANDBOX_HOME/.claude.json"
+fi
+
+# Copy other .claude directory contents (settings, history, etc.)
 if [ -d "$REAL_HOME/.claude" ]; then
     cp -R "$REAL_HOME/.claude/"* "$SANDBOX_HOME/.claude/" 2>/dev/null || true
 fi

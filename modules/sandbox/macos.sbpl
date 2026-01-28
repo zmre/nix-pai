@@ -37,6 +37,12 @@
     (literal "/dev/ptmx")
     (regex #"^/dev/ttys"))
 
+; TTY device write access (required for editors like neovim)
+(allow file-write*
+    (literal "/dev/ptmx")
+    (regex #"^/dev/ttys")
+    (regex #"^/dev/pty"))
+
 ; === DYNAMIC RULES APPENDED BY WRAPPER ===
 ; The wrapper script appends specific path-based permissions:
 ;
