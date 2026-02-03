@@ -60,10 +60,13 @@ in {
       # Generate sandbox settings with bypass mode allowed
       sandboxSettingsJsonContent = builtins.toJSON (
         lib.filterAttrsRecursive (name: value: value != null) (
-          perSystemConfig.pai.claudeSettings // {
-            permissions = (perSystemConfig.pai.claudeSettings.permissions or {}) // {
-              disableBypassPermissionsMode = null;  # Allow bypass in sandbox
-            };
+          perSystemConfig.pai.claudeSettings
+          // {
+            permissions =
+              (perSystemConfig.pai.claudeSettings.permissions or {})
+              // {
+                disableBypassPermissionsMode = null; # Allow bypass in sandbox
+              };
           }
         )
       );
@@ -158,8 +161,8 @@ in {
           key: value: ''--run 'export ${key}="${secretLookup value}"' ''
         ) (secrets binary))} \
           --prefix PATH : "$out/bin:${localPath}" \
-          --set CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
-          --set GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
+          --set-default CODEX_OSS_BASE_URL "${perSystemConfig.pai.ollamaServer}/v1" \
+          --set-default GEMINI_CLI_SYSTEM_DEFAULTS_PATH $out/gemini/settings-defaults.json \
           --set CODEX_MANAGED_CONFIG_PATH $out/codex/managed_config.toml \
           --set-default OLLAMA_HOST "${perSystemConfig.pai.ollamaServer}" \
           --set-default OLLAMA_API_URL "${perSystemConfig.pai.ollamaServer}"
