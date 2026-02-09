@@ -97,6 +97,9 @@ in {
           jq
           curl # Required for wrapper script health checks
           nodejs # Required for hooks - Node.js runs nix store files instantly while bun has ~5s delay
+          rust-analyzer # claude code can use lsps now
+          pyright # lsp
+          nixd # lsp
         ]
         ++ perSystemConfig.pai.extraPackages
         ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
