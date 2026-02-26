@@ -12,6 +12,28 @@ in {
     }: let
       perSystemConfig = config;
 
+      # Fix jeepney build failure on macOS: jeepney's installCheck requires dbus-daemon
+      # which isn't available on Darwin. Also filter jeepney.io.trio from pythonImportsCheck
+      # since it needs the `outcome` package (a trio dependency not present).
+      darwinFixesOverlay = final: prev:
+        lib.optionalAttrs prev.stdenv.isDarwin {
+          pythonPackagesExtensions =
+            prev.pythonPackagesExtensions
+            ++ [
+              (pfinal: pprev: {
+                jeepney = pprev.jeepney.overrideAttrs (old: {
+                  doInstallCheck = false;
+                  pythonImportsCheck =
+                    builtins.filter (m: m != "jeepney.io.trio")
+                    (old.pythonImportsCheck or []);
+                });
+              })
+            ];
+        };
+
+      # Apply Darwin fixes overlay (no-op on Linux since gated by isDarwin)
+      fixedPkgs = pkgs.appendOverlays [darwinFixesOverlay];
+
       # Generate settings.json content from merged settings
       settingsJsonContent = builtins.toJSON (lib.filterAttrsRecursive (name: value: value != null) perSystemConfig.pai.claudeSettings);
 
@@ -73,8 +95,10 @@ in {
       sandboxSettingsJsonFile = pkgs.writeText "sandbox-settings.json" sandboxSettingsJsonContent;
 
       # Import fabric module with necessary dependencies
+      # Use fixedPkgs so yt-dlp's jeepney dependency builds on macOS
       fabricWrapped = import ./fabric.nix {
-        inherit pkgs lib secretLookup perSystemConfig;
+        pkgs = fixedPkgs;
+        inherit lib secretLookup perSystemConfig;
       };
 
       # Fabric patterns derivation (only built if patterns are included)
