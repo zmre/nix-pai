@@ -148,7 +148,10 @@ in {
         ]
         ++ lib.optionals perSystemConfig.pai.fabric.enable [fabricWrapped.package]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableGemini [
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli
+          (inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli.override {
+            nodejs = pkgs.nodejs_22;
+            buildNpmPackage = pkgs.buildNpmPackage.override { nodejs = pkgs.nodejs_22; };
+          })
         ]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableOpencode [
           inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.opencode
