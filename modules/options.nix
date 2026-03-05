@@ -213,6 +213,7 @@
                 default = {
                   CLAUDE_CODE_MAX_OUTPUT_TOKENS = "64000";
                   CLAUDE_CODE_ENABLE_TELEMETRY= "0";
+                  ENABLE_LSP_TOOL= "1";
                 };
                 description = "Environment variables to set";
               };
@@ -243,6 +244,28 @@
                     };
                   };
                 };
+              };
+              enabledPlugins = lib.mkOption {
+                type = lib.types.attrsOf lib.types.bool;
+                default = {
+                  "typescript-lsp@claude-plugins-official"= true;
+                  "rust-analyzer-lsp@claude-plugins-official"= true;
+                  "swift-lsp@claude-plugins-official"= true;
+                  "pyright-lsp@claude-plugins-official"= true;
+                  "lua-lsp@claude-plugins-official"= true;
+                };
+                description = "Claude plugins, see https://claude.com/plugins";
+              };
+               officialMarketplaceAutoInstallAttempted = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = "Allow official claude plugins";
+               };
+              extraKnownMarketplaces = lib.mkOption {
+                type = lib.types.attrsOf (lib.types.attrsOf lib.types.str);
+                default = {
+                };
+                description = "See https://code.claude.com/docs/en/settings#extraknownmarketplaces";
               };
               permissions = lib.mkOption {
                 type = lib.types.submodule {

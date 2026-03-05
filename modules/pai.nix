@@ -121,9 +121,14 @@ in {
           jq
           curl # Required for wrapper script health checks
           nodejs # Required for hooks - Node.js runs nix store files instantly while bun has ~5s delay
-          rust-analyzer # claude code can use lsps now
-          pyright # lsp
-          nixd # lsp
+          rust-analyzer # lsp for rust
+          pyright # lsp for python
+          #nixd # lsp for nix -- not yet supported
+          typescript-language-server # lsp for js/ts
+          #svelte-language-server # lsp for svelte not supported yet
+          svelte-language-server # lsp for svelte not supported yet
+          sourcekit-lsp # lsp for swift and c-based languages
+          lua-language-server # lsp for lua
         ]
         ++ perSystemConfig.pai.extraPackages
         ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
@@ -150,7 +155,7 @@ in {
         ++ lib.optionals perSystemConfig.pai.otherTools.enableGemini [
           (inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli.override {
             nodejs = pkgs.nodejs_22;
-            buildNpmPackage = pkgs.buildNpmPackage.override { nodejs = pkgs.nodejs_22; };
+            buildNpmPackage = pkgs.buildNpmPackage.override {nodejs = pkgs.nodejs_22;};
           })
         ]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableOpencode [
