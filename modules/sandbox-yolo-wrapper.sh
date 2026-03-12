@@ -37,7 +37,7 @@ detect_private_mode() {
 
     # Check .agent-config.toml first
     if [ -f ".agent-config.toml" ]; then
-        local private_val=$(grep -E "^private\s*=" .agent-config.toml 2>/dev/null | head -1 | sed 's/.*=\s*//' | tr -d ' "')
+        local private_val=$(grep -E "^private[[:space:]]*=" .agent-config.toml 2>/dev/null | head -1 | sed 's/.*=[[:space:]]*//' | tr -d ' "')
         case "$private_val" in
             true|True|TRUE|1)  return 0 ;;
             false|False|FALSE|0) return 1 ;;

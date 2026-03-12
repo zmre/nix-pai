@@ -60,7 +60,7 @@ use_normal_mode() {
 }
 
 if [ -f ".agent-config.toml" ]; then
-    private_val=$(grep -E "^private\s*=" .agent-config.toml 2>/dev/null | head -1 | sed 's/.*=\s*//' | tr -d ' "')
+    private_val=$(grep -E "^private[[:space:]]*=" .agent-config.toml 2>/dev/null | head -1 | sed 's/.*=[[:space:]]*//' | tr -d ' "')
     case "$private_val" in
         true|True|TRUE|1)  use_private_mode "$@" ;;
         false|False|FALSE|0) use_normal_mode "$@" ;;
