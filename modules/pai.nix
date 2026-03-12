@@ -74,6 +74,12 @@ in {
           })
       );
 
+      # Generate CCR config.json content from ccrSettings option
+      ccrJsonContent = builtins.toJSON (
+        lib.filterAttrsRecursive (name: value: value != null) perSystemConfig.pai.ccrSettings
+      );
+      ccrJsonFile = pkgs.writeText "ccr-config.json" ccrJsonContent;
+
       # Create JSON config files as derivations
       settingsJsonFile = pkgs.writeText "settings.json" settingsJsonContent;
       mcpJsonFile = pkgs.writeText "mcp.json" mcpJsonContent;
@@ -276,7 +282,8 @@ in {
             mkdir -p $out/.claude-code-router/plugins
             mkdir -p $out/.claude-code-router/logs
             touch $out/.claude.json  # CCR expects this file to exist
-            cp "${localsrc}/modules/ccr-config.json" $out/.claude-code-router/config.json
+            cp ${ccrJsonFile} $out/.claude-code-router/config.json
+            chmod u+w $out/.claude-code-router/config.json
             cp "${localsrc}/modules/strip-thinking.js" $out/.claude-code-router/plugins/strip-thinking.js
           ''}
 

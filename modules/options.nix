@@ -763,6 +763,203 @@
           '';
         };
 
+        # Claude Code Router (CCR) config.json - generated as JSON at build time
+        ccrSettings = lib.mkOption {
+          type = lib.types.submodule {
+            freeformType = lib.types.attrsOf lib.types.anything;
+            options = {
+              LOG = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = "Enable CCR logging";
+              };
+              LOG_LEVEL = lib.mkOption {
+                type = lib.types.str;
+                default = "debug";
+                description = "CCR log level";
+              };
+              NON_INTERACTIVE_MODE = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = "Run CCR in non-interactive mode";
+              };
+              CLAUDE_PATH = lib.mkOption {
+                type = lib.types.str;
+                default = "@paiBasePath@/bin/claude";
+                description = "Path to claude binary. Use @paiBasePath@ placeholder.";
+              };
+              HOST = lib.mkOption {
+                type = lib.types.str;
+                default = "127.0.0.1";
+                description = "CCR listen host";
+              };
+              PORT = lib.mkOption {
+                type = lib.types.int;
+                default = 3456;
+                description = "CCR listen port";
+              };
+              APIKEY = lib.mkOption {
+                type = lib.types.str;
+                default = "";
+                description = "CCR API key (empty for no auth)";
+              };
+              API_TIMEOUT_MS = lib.mkOption {
+                type = lib.types.str;
+                default = "600000";
+                description = "API timeout in milliseconds";
+              };
+              PROXY_URL = lib.mkOption {
+                type = lib.types.str;
+                default = "";
+                description = "Proxy URL for CCR requests";
+              };
+              transformers = lib.mkOption {
+                type = lib.types.listOf lib.types.anything;
+                default = [
+                  {path = "@paiBasePath@/.claude-code-router/plugins/strip-thinking.js";}
+                ];
+                description = "Global transformer plugins for CCR";
+              };
+              Providers = lib.mkOption {
+                type = lib.types.listOf (lib.types.submodule {
+                  freeformType = lib.types.attrsOf lib.types.anything;
+                  options = {
+                    name = lib.mkOption {
+                      type = lib.types.str;
+                      description = "Provider name";
+                    };
+                    api_base_url = lib.mkOption {
+                      type = lib.types.str;
+                      description = "API base URL. Use @ollamaHost@ placeholder.";
+                    };
+                    api_key = lib.mkOption {
+                      type = lib.types.str;
+                      default = "";
+                      description = "API key for the provider";
+                    };
+                    models = lib.mkOption {
+                      type = lib.types.listOf lib.types.str;
+                      default = [];
+                      description = "List of model names available from this provider";
+                    };
+                    transformer = lib.mkOption {
+                      type = lib.types.attrsOf lib.types.anything;
+                      default = {};
+                      description = "Per-model and default transformer configurations";
+                    };
+                  };
+                });
+                default = [
+                  {
+                    name = "ollama";
+                    api_base_url = "@ollamaHost@/v1/chat/completions";
+                    api_key = "ollama";
+                    models = [
+                      "gpt-oss:20b"
+                      "gemma3:27b"
+                      "qwen3-coder:30b"
+                      "qwen3:30b-thinking"
+                      "llama3:8b"
+                      "deepseek-r1:32b"
+                      "deepseek-r1:8b"
+                      "glm4:9b"
+                      "qwen3:30b"
+                      "devstral-small-2:24b"
+                      "nemotron-3-nano:latest"
+                      "ministral-3:14b"
+                      "magistral:24b"
+                      "qwen3-coder:30b-a3b"
+                      "deepseek-coder-v2:16b"
+                    ];
+                    transformer = {
+                      use = [
+                        ["maxtoken" {max_tokens = 65536;}]
+                        "enhancetool"
+                      ];
+                      "qwen3:30b-thinking" = {use = ["strip-thinking"];};
+                      "nemotron-3-nano:latest" = {use = ["strip-thinking"];};
+                      "deepseek-r1:32b" = {use = ["deepseek" "strip-thinking"];};
+                      "deepseek-r1:8b" = {use = ["deepseek" "strip-thinking"];};
+                    };
+                  }
+                ];
+                description = "List of provider configurations for CCR";
+              };
+              StatusLine = lib.mkOption {
+                type = lib.types.attrsOf lib.types.anything;
+                default = {
+                  enabled = false;
+                  currentStyle = "default";
+                  default = {
+                    modules = [
+                      {
+                        type = "model";
+                        icon = "";
+                        text = "{{model}}";
+                        color = "bright_yellow";
+                      }
+                    ];
+                  };
+                  powerline = {
+                    modules = [];
+                  };
+                };
+                description = "CCR status line configuration";
+              };
+              Router = lib.mkOption {
+                type = lib.types.submodule {
+                  freeformType = lib.types.attrsOf lib.types.anything;
+                  options = {
+                    default = lib.mkOption {
+                      type = lib.types.str;
+                      default = "nemotron-3-nano:latest";
+                      description = "Default model for routing";
+                    };
+                    think = lib.mkOption {
+                      type = lib.types.str;
+                      default = "ollama,gpt-oss:20b";
+                      description = "Model for thinking tasks (provider,model format)";
+                    };
+                    longContext = lib.mkOption {
+                      type = lib.types.str;
+                      default = "ollama,gpt-oss:20b";
+                      description = "Model for long context tasks";
+                    };
+                    longContextThreshold = lib.mkOption {
+                      type = lib.types.int;
+                      default = 40000;
+                      description = "Token threshold for switching to long context model";
+                    };
+                    background = lib.mkOption {
+                      type = lib.types.str;
+                      default = "ollama,deepseek-r1:8b";
+                      description = "Model for background tasks";
+                    };
+                    webSearch = lib.mkOption {
+                      type = lib.types.str;
+                      default = "ollama,deepseek-r1:8b";
+                      description = "Model for web search tasks";
+                    };
+                    image = lib.mkOption {
+                      type = lib.types.str;
+                      default = "";
+                      description = "Model for image tasks (empty to disable)";
+                    };
+                  };
+                };
+                default = {};
+                description = "CCR router configuration mapping task types to models";
+              };
+            };
+          };
+          default = {};
+          description = ''
+            Claude Code Router (CCR) configuration.
+            Generated as JSON at build time when automaticPrivacy is enabled.
+            Use @paiBasePath@, @ollamaHost@, and @privateModel@ as placeholders.
+          '';
+        };
+
         extraSkills = lib.mkOption {
           type = lib.types.listOf lib.types.path;
           default = [];
