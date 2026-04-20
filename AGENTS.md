@@ -122,7 +122,7 @@ Validates flake structure.
 nix flake update
 ```
 
-Updates `flake.lock` with latest inputs (nixpkgs, nix-ai-tools).
+Updates `flake.lock` with latest inputs (nixpkgs, llm-agents).
 
 ## Configuration Options
 

@@ -145,27 +145,27 @@ in {
       # corePackages are made available to anyone who has installed this pai
       corePackages =
         [
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
-          #inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.openskills
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.agent-browser
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.spec-kit
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccstatusline
+          #inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.openskills
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.agent-browser
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.spec-kit
         ]
         ++ lib.optionals perSystemConfig.pai.automaticPrivacy [
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.claude-code-router
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code-router
         ]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableCodex [
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.codex
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
         ]
         ++ lib.optionals perSystemConfig.pai.fabric.enable [fabricWrapped.package]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableGemini [
-          (inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli.override {
+          (inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli.override {
             nodejs = pkgs.nodejs_22;
             buildNpmPackage = pkgs.buildNpmPackage.override {nodejs = pkgs.nodejs_22;};
           })
         ]
         ++ lib.optionals perSystemConfig.pai.otherTools.enableOpencode [
-          inputs.nix-ai-tools.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
           #ollama
         ];
 

@@ -3,16 +3,26 @@
 
   nixConfig = {
     allowUnfree = true;
-    extra-substituters = ["https://numtide.cachix.org"];
-    extra-trusted-public-keys = ["numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="];
+    extra-substituters = [
+      "https://cache.nixos.org"
+      "https://nix-community.cachix.org"
+      "https://zmre.cachix.org"
+      "https://cache.numtide.com"
+    ];
+    extra-trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "zmre.cachix.org-1:WIE1U2a16UyaUVr+Wind0JM6pEXBe43PQezdPKoDWLE="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+    ];
   };
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     # for some things not available in nixpkgs, but also it stays up-to-date more
-    nix-ai-tools.url = "github:numtide/llm-agents.nix";
-    # do not have nix-ai-tools follow nixpkgs
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    # do not have llm-agents follow nixpkgs
     # fabric patterns source
     fabric = {
       url = "github:danielmiessler/fabric";
