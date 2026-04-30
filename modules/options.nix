@@ -679,6 +679,58 @@
                       baseURL = "@ollamaHost@/v1";
                     };
                     models = {
+                      "qwen/qwen3.6-27b" = {
+                        name = "Qwen 3.6 27b";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "qwen/qwen3.6-35b-a3b" = {
+                        name = "Qwen 3.6 35b A3B";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "ibm-granite_granite-4.1-30b" = {
+                        name = "IBM Granite 4.1 30b";
+                        tool_call = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "granite-4.1-8b-fp8" = {
+                        name = "IBM Granite 4.1 8b FP8";
+                        tool_call = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "zai-org/glm-4.7.flash" = {
+                        name = "GLM 4.7 Flash";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
+                      "google/gemma-4-26b-a4b" = {
+                        name = "Gemma 4 26B A4B";
+                        tool_call = true;
+                        reasoning = true;
+                        temperature = true;
+                        options = {
+                          num_ctx = 65536;
+                        };
+                      };
                       "gpt-oss:20b" = {
                         name = "GPT OSS 20b";
                         tool_call = true;
