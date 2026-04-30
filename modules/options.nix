@@ -213,6 +213,9 @@
                 default = {
                   CLAUDE_CODE_MAX_OUTPUT_TOKENS = "64000";
                   CLAUDE_CODE_ENABLE_TELEMETRY= "0";
+                  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC= "1";
+                  # See https://unsloth.ai/docs/basics/claude-code#fixing-90-slower-inference-in-claude-code
+                  CLAUDE_CODE_ATTRIBUTION_HEADER = "0";
                   ENABLE_LSP_TOOL= "1";
                 };
                 description = "Environment variables to set";
