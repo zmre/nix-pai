@@ -236,9 +236,9 @@ else
         --proc /proc
         --dev /dev
         --tmpfs /tmp
+        --ro-bind "$PROJECT_PARENT" "$PROJECT_PARENT"
         --bind "$SANDBOX_HOME" "$HOME"
         --bind "$PROJECT_DIR" "$PROJECT_DIR"
-        --ro-bind "$PROJECT_PARENT" "$PROJECT_PARENT"
         --ro-bind "@paiBasePath@" "@paiBasePath@"
         --ro-bind /nix /nix
         --ro-bind /usr /usr
