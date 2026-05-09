@@ -100,9 +100,21 @@ mkdir -p "$SANDBOX_HOME/.claude"
 # Get real home directory
 REAL_HOME="${HOME:-$(eval echo ~)}"
 
-# Extract OAuth credentials from macOS Keychain (BEFORE entering sandbox)
-# Claude Code on macOS stores OAuth tokens in Keychain, not in files
-# We extract and write to .credentials.json (Linux-style) for sandbox use
+# Copy .claude.json for config/preferences (not auth)
+if [ -f "$REAL_HOME/.claude.json" ]; then
+    cp "$REAL_HOME/.claude.json" "$SANDBOX_HOME/.claude.json"
+fi
+
+# Copy .claude directory contents (settings, history, and on Linux the
+# .credentials.json OAuth file). The trailing /. form copies hidden files
+# too — a plain * glob misses .credentials.json and forces re-login.
+if [ -d "$REAL_HOME/.claude" ]; then
+    cp -R "$REAL_HOME/.claude/." "$SANDBOX_HOME/.claude/" 2>/dev/null || true
+fi
+
+# macOS: OAuth tokens live in the Keychain, not a file. Extract them and
+# write .credentials.json so the sandboxed Claude can authenticate. This
+# runs after the directory copy so it overrides any stale file there.
 if [[ "$PLATFORM" == "Darwin" ]]; then
     CREDS=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null || true)
     if [ -n "$CREDS" ]; then
@@ -111,16 +123,6 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
         echo "Warning: Could not extract Claude credentials from Keychain"
         echo "Run 'claude' outside sandbox first to authenticate"
     fi
-fi
-
-# Copy .claude.json for config/preferences (not auth)
-if [ -f "$REAL_HOME/.claude.json" ]; then
-    cp "$REAL_HOME/.claude.json" "$SANDBOX_HOME/.claude.json"
-fi
-
-# Copy other .claude directory contents (settings, history, etc.)
-if [ -d "$REAL_HOME/.claude" ]; then
-    cp -R "$REAL_HOME/.claude/"* "$SANDBOX_HOME/.claude/" 2>/dev/null || true
 fi
 
 CLAUDE_CMD="@paiBasePath@/bin/claude"
@@ -242,7 +244,7 @@ else
         --ro-bind /usr /usr
         --ro-bind /bin /bin
         --ro-bind /etc /etc
-        --setenv HOME "$SANDBOX_HOME"
+        --setenv HOME "$HOME"
         --setenv PATH "@paiBasePath@/bin:@paiEnvPath@:$PATH"
         --setenv PAI_DIR "@paiBasePath@"
         --setenv DA "@assistantName@"
@@ -252,6 +254,15 @@ else
     # Add lib paths if they exist
     [[ -d /lib ]] && BWRAP_ARGS+=(--ro-bind /lib /lib)
     [[ -d /lib64 ]] && BWRAP_ARGS+=(--ro-bind /lib64 /lib64)
+
+    # DNS: on NixOS (and many other distros) /etc/resolv.conf is a symlink
+    # into /run/, which isn't bound — leaving the symlink dangling inside
+    # the sandbox. Bind the real file at its actual path so the existing
+    # /etc/resolv.conf symlink chain resolves correctly.
+    RESOLV_CONF="$(readlink -f /etc/resolv.conf 2>/dev/null || true)"
+    if [[ -n "$RESOLV_CONF" && -f "$RESOLV_CONF" && "$RESOLV_CONF" != "/etc/resolv.conf" ]]; then
+        BWRAP_ARGS+=(--ro-bind "$RESOLV_CONF" "$RESOLV_CONF")
+    fi
 
     # Add private mode env vars if enabled
     if [[ "$PRIVATE_MODE" == "true" ]]; then
