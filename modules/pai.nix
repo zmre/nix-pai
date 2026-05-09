@@ -558,22 +558,24 @@ in {
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @paiBasePath@ "$out"
 
-          # CORE skill and GEMINI.md have additional user-specific variables
+          # CORE skill and GEMINI.md have additional user-specific variables.
+          # @additionalCoreInstructions@ is replaced first so that any standard
+          # placeholders inside the user-provided content also get substituted.
           substituteInPlace $out/gemini/GEMINI.md \
+              --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @keyContacts@ '${perSystemConfig.pai.keyContacts}' \
               --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
               --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
-              --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @paiBasePath@ "$out"
           substituteInPlace $out/claude/skills/CORE/SKILL.md \
+              --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
               --replace-quiet @keyContacts@ '${perSystemConfig.pai.keyContacts}' \
               --replace-quiet @socialMedia@ '${perSystemConfig.pai.socialMedia}' \
               --replace-quiet @userFullName@ '${perSystemConfig.pai.userFullName}' \
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
-              --replace-quiet @additionalCoreInstructions@ "${perSystemConfig.pai.additionalCoreInstructions}" \
               --replace-quiet @paiBasePath@ "$out"
 
           # Fabric patterns list substitution (generated earlier in build)
