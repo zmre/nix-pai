@@ -408,8 +408,11 @@ in {
             # Get relative path from skills directory
             rel_path="''${skill_file#$SKILLS_DIR/}"
 
-            # Extract name and description from YAML frontmatter using awk
-            eval "$(awk '
+            # Extract name/description from YAML frontmatter and emit the markdown
+            # bullet directly. awk never produces shell code, so frontmatter text
+            # (backticks, $(...), quotes) is never interpreted -- no eval, no
+            # escaping. $out/$rel_path cross in as awk vars, not as content.
+            awk -v out="$out" -v rel_path="$rel_path" '
                 BEGIN {
                     in_frontmatter = 0
                     name = ""
@@ -441,41 +444,20 @@ in {
                     exit
                 }
                 END {
-                    # Escape quotes for shell eval
-                    gsub(/"/, "\\\"", name)
-                    gsub(/"/, "\\\"", description)
-                    print "skill_name=\"" name "\""
-                    print "skill_desc=\"" description "\""
+                    if (name != "" && name != "PAI")
+                        print "* [" name "](" out "/claude/skills/" rel_path ") - " description
                 }
-            ' "$skill_file")"
-
-            # Output in markdown format
-            if [[ -n "$skill_name" && "$skill_name" != "PAI" ]]; then
-                echo "* [$skill_name]($out/claude/skills/$rel_path) - $skill_desc" >> $out/gemini/GEMINI.md
-            fi
+            ' "$skill_file" >> $out/gemini/GEMINI.md
           done
 
-          # Generate skills-list.json from all SKILL.md files
-          echo "{" > $out/opencode/skills-list.json
-          first=true
-          while IFS= read -r skill_file; do
-              # Get relative path from skills directory
+          # Generate skills-list.json from all SKILL.md files. jq --arg escapes
+          # the dir name and path; jq -s 'add' merges the per-skill objects so
+          # filesystem names never need hand-written JSON quoting.
+          find $out/claude/skills -name "SKILL.md" -type f | sort | while IFS= read -r skill_file; do
               rel_path="''${skill_file#$out/claude/skills/}"
-              # Get immediate parent directory name
-              parent_dir=$(basename $(dirname "$skill_file"))
-
-              # Add comma separator for all but first entry
-              if [ "$first" = true ]; then
-                first=false
-              else
-                echo "," >> $out/opencode/skills-list.json
-              fi
-
-              # Add entry to JSON
-              echo -n "  \"$parent_dir\": \"$rel_path\"" >> $out/opencode/skills-list.json
-          done < <(find $out/claude/skills -name "SKILL.md" -type f | sort)
-          echo "" >> $out/opencode/skills-list.json
-          echo "}" >> $out/opencode/skills-list.json
+              parent_dir=$(basename "$(dirname "$skill_file")")
+              ${pkgs.jq}/bin/jq -n --arg k "$parent_dir" --arg v "$rel_path" '{($k): $v}'
+          done | ${pkgs.jq}/bin/jq -s 'add // {}' > $out/opencode/skills-list.json
 
           ###########################################
           # SECTION 6: Perform template substitutions
@@ -596,14 +578,26 @@ in {
               --replace-quiet @keyBio@ "${perSystemConfig.pai.keyBio}" \
               --replace-quiet @paiBasePath@ "$out"
 
-          # Fabric patterns list substitution (generated earlier in build)
+          # Fabric patterns list substitution (generated earlier in build).
+          # Pass content via the environment (no -v backslash processing) and
+          # splice with index()/substr -- literal on both sides, so a pattern
+          # description containing & or \ cannot corrupt the output.
           if [ -f "$out/claude/skills/fabric/.patterns-list.txt" ]; then
-              PATTERNS_CONTENT=$(cat "$out/claude/skills/fabric/.patterns-list.txt")
-              # Use awk for multi-line substitution since substituteInPlace doesn't handle it well
-              awk -v patterns="$PATTERNS_CONTENT" '{gsub(/@fabricPatternsList@/, patterns); print}' \
-                  "$out/claude/skills/fabric/SKILL.md" > "$out/claude/skills/fabric/SKILL.md.tmp"
+              export PATTERNS_CONTENT=$(cat "$out/claude/skills/fabric/.patterns-list.txt")
+              awk '
+                  BEGIN { ph = "@fabricPatternsList@"; rep = ENVIRON["PATTERNS_CONTENT"]; phlen = length(ph) }
+                  {
+                      line = $0; result = ""
+                      while ((i = index(line, ph)) > 0) {
+                          result = result substr(line, 1, i - 1) rep
+                          line = substr(line, i + phlen)
+                      }
+                      print result line
+                  }
+              ' "$out/claude/skills/fabric/SKILL.md" > "$out/claude/skills/fabric/SKILL.md.tmp"
               mv "$out/claude/skills/fabric/SKILL.md.tmp" "$out/claude/skills/fabric/SKILL.md"
               rm -f "$out/claude/skills/fabric/.patterns-list.txt"
+              unset PATTERNS_CONTENT
           fi
 
           # Generic substitution for all *.md files in skills (except CORE which is handled above)
