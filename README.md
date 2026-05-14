@@ -223,3 +223,54 @@ But it isn't just a single program, but a collection of AI tools. So if you inst
 * `fabric`,
 * and some others.
 
+### get-shit-done (GSD)
+
+[get-shit-done](https://github.com/gsd-build/get-shit-done) is a meta-prompting / spec-driven development system. It installs skills, hooks, and slash commands into a target project so the agent (Claude Code, OpenCode, Codex, Gemini, …) can drive a full PRD → plan → milestones → execution loop.
+
+Three binaries land in `result/bin/`:
+
+- `get-shit-done-cc` — installer. Adds GSD skills/hooks/commands to a project or to your global config dir.
+- `gsd-sdk` — autonomous SDK driver: `run`, `auto`, `init`, `query`.
+- `gsd-tools` — alias for `gsd-sdk` (same CLI surface).
+
+#### Setup
+
+Pick **one** of the install modes:
+
+```bash
+# Per-project: writes into ./.claude, ./.opencode, etc. in the current repo
+get-shit-done-cc --local --all
+
+# Just one runtime
+get-shit-done-cc --local --claude
+
+# Global: writes into ~/.claude (or the runtime's config dir)
+get-shit-done-cc --global --all
+
+# Uninstall everything GSD added
+get-shit-done-cc --uninstall
+```
+
+After install, restart your agent so it picks up the new skills and hooks.
+
+#### Use
+
+Inside the agent, GSD exposes slash commands like `/gsd-new-project`, `/gsd-execute`, `/gsd-advance`, etc. The typical flow:
+
+1. `/gsd-new-project` from a PRD or rough description → bootstraps `.planning/`.
+2. `/gsd-execute` → works the next milestone.
+3. `/gsd-advance` → moves to the next.
+
+From the shell, `gsd-sdk` can drive the same lifecycle non-interactively:
+
+```bash
+# Bootstrap from a PRD file, then run the autonomous loop
+gsd-sdk auto --init @docs/prd.md
+
+# One-shot: run a milestone from a prompt
+gsd-sdk run "Add OAuth login to the user service"
+
+# Resume the next pending milestone in the current project
+gsd-sdk auto --project-dir .
+```
+
