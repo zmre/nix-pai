@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { readFileSync, existsSync } from 'fs';
-import { $ } from "bun";
+import { readStdin } from './lib/stdin';
 
 // Voice mappings for different agent types
 const AGENT_VOICE_IDS: Record<string, string> = {
@@ -209,29 +209,8 @@ function extractCompletionMessage(taskOutput: string): { message: string | null,
 
 async function main() {
   console.error('🔍 SubagentStop hook started');
-  // Read input from stdin with timeout
-  let input = '';
-  try {
-    const decoder = new TextDecoder();
-    const reader = Bun.stdin.stream().getReader();
-
-    const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 500);
-    });
-
-    const readPromise = (async () => {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        input += decoder.decode(value, { stream: true });
-      }
-    })();
-
-    await Promise.race([readPromise, timeoutPromise]);
-  } catch (e) {
-    console.error('Failed to read input:', e);
-    process.exit(0);
-  }
+  // Read input from stdin (with a 500ms safety timeout)
+  const input = await readStdin(500);
 
   if (!input) {
     console.log('No input received');

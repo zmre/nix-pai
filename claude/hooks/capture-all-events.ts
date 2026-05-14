@@ -14,6 +14,7 @@
 import { readFileSync, appendFileSync, mkdirSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { readStdin } from './lib/stdin';
 
 interface HookEvent {
   source_app: string;
@@ -110,7 +111,7 @@ async function main() {
     const eventType = args[eventTypeIndex + 1];
 
     // Read hook data from stdin
-    const stdinData = await Bun.stdin.text();
+    const stdinData = await readStdin();
     const hookData = JSON.parse(stdinData);
 
     // Detect agent type from session mapping or payload

@@ -24,7 +24,6 @@
 import { existsSync, statSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
-import { $ } from "bun";
 
 async function sendNotification(title: string, message: string, priority: string = 'normal') {
   try {

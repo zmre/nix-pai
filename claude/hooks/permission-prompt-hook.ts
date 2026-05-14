@@ -6,6 +6,7 @@
  */
 
 import { statSync } from 'fs';
+import { spawn } from 'child_process';
 import {
   readHookInput,
   readTranscript,
@@ -22,10 +23,10 @@ function spawnResumeWatcher(transcriptPath: string, summary: string): void {
   try {
     const initialSize = statSync(transcriptPath).size;
 
-    // Inline script to run in background - watches for transcript changes
-    // Uses Bun-native APIs for reliability
+    // Inline script to run in background - watches for transcript changes.
+    // Uses Node built-in APIs (CommonJS require) so it runs under `node -e`.
     const watcherScript = `
-      import { statSync, writeFileSync } from 'fs';
+      const { statSync, writeFileSync } = require('fs');
       const transcriptPath = ${JSON.stringify(transcriptPath)};
       const initialSize = ${initialSize};
       const summary = ${JSON.stringify(summary)};
@@ -61,12 +62,13 @@ function spawnResumeWatcher(transcriptPath: string, summary: string): void {
       }, 500);
     `;
 
-    // Spawn detached process using the same bun interpreter
-    Bun.spawn([process.execPath, '-e', watcherScript], {
-      stdout: 'ignore',
-      stderr: 'ignore',
-      stdin: 'ignore',
+    // Spawn a detached process using the same interpreter so the watcher
+    // outlives this hook process.
+    const watcher = spawn(process.execPath, ['-e', watcherScript], {
+      detached: true,
+      stdio: 'ignore',
     });
+    watcher.unref();
 
     console.error(`🔍 Resume watcher spawned for transcript`);
   } catch (e) {

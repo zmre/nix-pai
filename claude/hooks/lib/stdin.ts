@@ -8,21 +8,35 @@ export interface HookInput {
 }
 
 /**
- * Read all stdin content as a string
+ * Read all stdin content as a string.
+ *
+ * Uses Node's `process.stdin` rather than `Bun.stdin` so it works after
+ * `bun build --target node` (which does not polyfill the `Bun` global).
+ * `process.stdin` is also supported under the Bun runtime, so this is
+ * portable across both.
+ *
+ * If `timeoutMs` is provided, resolves with whatever was read so far once
+ * the timeout elapses, instead of waiting indefinitely for EOF.
  */
-export async function readStdin(): Promise<string> {
+export async function readStdin(timeoutMs?: number): Promise<string> {
   let input = '';
-  const decoder = new TextDecoder();
-  const reader = Bun.stdin.stream().getReader();
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      input += decoder.decode(value, { stream: true });
+  const read = (async () => {
+    process.stdin.setEncoding('utf-8');
+    for await (const chunk of process.stdin) {
+      input += chunk;
     }
-  } catch (e) {
+  })().catch((e) => {
     console.error(`Error reading stdin: ${e}`);
+  });
+
+  if (timeoutMs && timeoutMs > 0) {
+    await Promise.race([
+      read,
+      new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+    ]);
+  } else {
+    await read;
   }
 
   return input;

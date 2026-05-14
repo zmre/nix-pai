@@ -10,6 +10,7 @@
 import { appendFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { readStdin } from './lib/stdin';
 
 interface ToolUseData {
   tool_name: string;
@@ -27,7 +28,7 @@ const INTERESTING_TOOLS = ['Bash', 'Edit', 'Write', 'Read', 'Task', 'NotebookEdi
 async function main() {
   try {
     // Read input from stdin
-    const input = await Bun.stdin.text();
+    const input = await readStdin();
     if (!input || input.trim() === '') {
       process.exit(0);
     }

@@ -7,7 +7,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { $ } from "bun";
+import { readStdin } from './lib/stdin';
 
 interface NotificationPayload {
   title: string;
@@ -123,25 +123,8 @@ async function main() {
   let hookInput: HookInput | null = null;
 
   try {
-    // Read the JSON input from stdin
-    const decoder = new TextDecoder();
-    const reader = Bun.stdin.stream().getReader();
-    let input = '';
-
-    const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 500);
-    });
-
-    const readPromise = (async () => {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        input += decoder.decode(value, { stream: true });
-      }
-    })();
-
-    await Promise.race([readPromise, timeoutPromise]);
-
+    // Read the JSON input from stdin (with a 500ms safety timeout)
+    const input = await readStdin(500);
     if (input.trim()) {
       hookInput = JSON.parse(input) as HookInput;
     }

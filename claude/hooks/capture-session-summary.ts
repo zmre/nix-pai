@@ -10,6 +10,7 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { readStdin } from './lib/stdin';
 
 interface SessionData {
   conversation_id: string;
@@ -22,7 +23,7 @@ const HISTORY_DIR = join(homedir(), '.local/share/pai/history');
 async function main() {
   try {
     // Read input from stdin
-    const input = await Bun.stdin.text();
+    const input = await readStdin();
     if (!input || input.trim() === '') {
       process.exit(0);
     }

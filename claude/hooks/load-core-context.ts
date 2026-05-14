@@ -3,29 +3,30 @@
 /**
  * load-core-context.ts
  *
- * Automatically loads your PAI skill context at session start by reading and injecting
- * the PAI SKILL.md file contents directly into Claude's context as a system-reminder.
+ * Directs Claude to load the PAI CORE skill at session start by emitting a short
+ * <system-reminder> that points at the SKILL.md file, rather than inlining its
+ * contents.
  *
- * Purpose:
- * - Read PAI SKILL.md file content
- * - Output content as system-reminder for Claude to process
- * - Ensure complete context (contacts, preferences, security, identity) available at session start
- * - Bypass skill activation logic by directly injecting context
+ * Why a directive instead of inlining the content:
+ * - The Claude Code harness caps how much hook stdout it injects into context.
+ *   Large output is replaced with a ~2KB preview and the rest is dumped to a
+ *   file Claude never reads. CORE/SKILL.md (~10KB) exceeded that cap and was
+ *   silently truncated, so Claude only ever saw its first ~2KB.
+ * - Having Claude Read the file via the Read tool has no such cap, so the
+ *   skill is loaded in full and reliably.
  *
  * Setup:
  * 1. Customize your ~/.claude/skills/CORE/SKILL.md with your personal context
  * 2. Add this hook to settings.json SessionStart hooks
- * 3. Ensure PAI_DIR environment variable is set (defaults to $HOME/.claude)
  *
  * How it works:
  * - Runs at the start of every Claude Code session
  * - Skips execution for subagent sessions (they don't need PAI context)
- * - Reads your PAI SKILL.md file
- * - Injects content as <system-reminder> which Claude processes automatically
- * - Gives your AI immediate access to your complete personal context
+ * - Verifies the PAI SKILL.md file exists
+ * - Emits a <system-reminder> instructing Claude to Read the file in full
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
@@ -52,31 +53,25 @@ async function main() {
       process.exit(1);
     }
 
-    console.error('📚 Reading PAI core context from skill file...');
+    console.error('📚 Directing Claude to load PAI core context...');
 
-    // Read the PAI SKILL.md file content
-    const paiContent = readFileSync(paiSkillPath, 'utf-8');
-
-    console.error(`✅ Read ${paiContent.length} characters from PAI SKILL.md`);
-
-    // Output the PAI content as a system-reminder
-    // This will be injected into Claude's context at session start
+    // Emit a short directive pointing at the skill file. We deliberately do NOT
+    // inline the file contents: the harness caps hook stdout and would truncate
+    // a ~10KB SKILL.md to a ~2KB preview. Reading via the Read tool has no cap.
     const message = `<system-reminder>
-PAI CORE CONTEXT (Auto-loaded at Session Start)
+PAI CORE CONTEXT (Session Start)
 
-The following context has been loaded from ${paiSkillPath}:
+Before responding to the user, you MUST use the Read tool to read this file
+IN FULL, and then follow all instructions, preferences, and guidelines in it
+for the rest of this session:
 
----
-${paiContent}
----
-
-This context is now active for this session. Follow all instructions, preferences, and guidelines contained above.
+  - ${paiSkillPath}
 </system-reminder>`;
 
     // Write to stdout (will be captured by Claude Code)
     console.log(message);
 
-    console.error('✅ PAI context injected into session');
+    console.error('✅ PAI context directive injected into session');
     process.exit(0);
   } catch (error) {
     console.error('❌ Error in load-core-context hook:', error);
