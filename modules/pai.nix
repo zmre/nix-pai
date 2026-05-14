@@ -142,6 +142,15 @@ in {
 
       localPath = pkgs.lib.makeBinPath hiddenPackages;
 
+      gsdSrcInfo = inputs.get-shit-done;
+      get-shit-done = pkgs.callPackage ./get-shit-done.nix {
+        src = gsdSrcInfo;
+        version =
+          if gsdSrcInfo ? shortRev
+          then "unstable-${gsdSrcInfo.shortRev}"
+          else "unstable";
+      };
+
       # corePackages are made available to anyone who has installed this pai
       corePackages =
         [
@@ -150,6 +159,7 @@ in {
           #inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.openskills
           inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.agent-browser
           inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.spec-kit
+          get-shit-done
         ]
         ++ lib.optionals perSystemConfig.pai.automaticPrivacy [
           inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code-router
@@ -240,36 +250,6 @@ in {
           # SECTION 8: Wrap binaries with secrets
           ###########################################
           ${lib.concatStringsSep "\n" (lib.map mkWrapSecret binariesToWrap)}
-
-          ###########################################
-          # SECTION 9: Copy user's extra files
-          ###########################################
-          # Copy in the user's settings files overwriting if needed
-          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
-              if builtins.readFileType x == "directory"
-              then "/*"
-              else ""
-            }  $out/claude/skills/\n")
-            perSystemConfig.pai.extraSkills}
-          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
-              if builtins.readFileType x == "directory"
-              then "/*"
-              else ""
-            } $out/claude/hooks/\n")
-            perSystemConfig.pai.extraHooks}
-          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
-              if builtins.readFileType x == "directory"
-              then "/*"
-              else ""
-            } $out/claude/agents/\n")
-            perSystemConfig.pai.extraAgents}
-          mkdir -p $out/claude/commands
-          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
-              if builtins.readFileType x == "directory"
-              then "/*"
-              else ""
-            } $out/claude/commands/\n")
-            perSystemConfig.pai.extraCommands}
         '';
 
         installPhase = ''
@@ -366,6 +346,41 @@ in {
             mkdir -p $out/claude/skills/fabric
             echo "Patterns not bundled. Use \`fabric -l\` to list available patterns, or \`fabric -p pattern_name\` to execute." > $out/claude/skills/fabric/.patterns-list.txt
           ''}
+
+          ###########################################
+          # SECTION 5.5: Copy user's extra files
+          ###########################################
+          # Copy caller-provided skills/hooks/agents/commands. This must run
+          # before SECTION 6 (substitutions) and SECTION 7 (hook compilation)
+          # so caller content gets the same @paiBasePath@/@assistantName@
+          # treatment and TypeScript hooks are compiled to JavaScript.
+          # chmod u+w is required because nix store sources are read-only.
+          mkdir -p $out/claude/skills $out/claude/hooks $out/claude/agents $out/claude/commands
+          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
+              if builtins.readFileType x == "directory"
+              then "/*"
+              else ""
+            }  $out/claude/skills/\n")
+            perSystemConfig.pai.extraSkills}
+          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
+              if builtins.readFileType x == "directory"
+              then "/*"
+              else ""
+            } $out/claude/hooks/\n")
+            perSystemConfig.pai.extraHooks}
+          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
+              if builtins.readFileType x == "directory"
+              then "/*"
+              else ""
+            } $out/claude/agents/\n")
+            perSystemConfig.pai.extraAgents}
+          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
+              if builtins.readFileType x == "directory"
+              then "/*"
+              else ""
+            } $out/claude/commands/\n")
+            perSystemConfig.pai.extraCommands}
+          chmod -R u+w $out/claude/skills $out/claude/hooks $out/claude/agents $out/claude/commands
 
           mkdir -p "$out/codex"
           cp  "${localsrc}/codex/managed_config.toml" "$out/codex"
@@ -551,19 +566,15 @@ in {
               --replace-quiet @ollamaHost@ '${perSystemConfig.pai.ollamaServer}' \
               --replace-quiet @paiBasePath@ "$out"
 
-          # Hook-specific substitutions
-          substituteInPlace $out/claude/hooks/load-core-context.ts \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/hooks/capture-all-events.ts \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/hooks/stop-hook.ts \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
-          substituteInPlace $out/claude/hooks/context-compression-hook.ts \
-              --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
-              --replace-quiet @paiBasePath@ "$out"
+          # Generic substitution for all hook source files (.ts/.js), including
+          # caller-provided hooks copied in SECTION 5.5. Recursive so bundled
+          # imports under lib/ and utils/ are covered before SECTION 7 compiles
+          # entry-point hooks to JavaScript.
+          find $out/claude/hooks -type f \( -name "*.ts" -o -name "*.js" \) | while read -r hookfile; do
+              substituteInPlace "$hookfile" \
+                  --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+                  --replace-quiet @paiBasePath@ "$out"
+          done
 
           # CORE skill and GEMINI.md have additional user-specific variables.
           # @additionalCoreInstructions@ is replaced first so that any standard

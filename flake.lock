@@ -114,6 +114,22 @@
         "type": "github"
       }
     },
+    "get-shit-done": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778770360,
+        "narHash": "sha256-cLbxWA502S4jewg+ndCFcF4zWqaU2IeDp6UdWrw9pqE=",
+        "owner": "gsd-build",
+        "repo": "get-shit-done",
+        "rev": "625ccf52174276ae9006af24c6e1909a84992b55",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gsd-build",
+        "repo": "get-shit-done",
+        "type": "github"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "blueprint": "blueprint",
@@ -188,6 +204,7 @@
       "inputs": {
         "fabric": "fabric",
         "flake-parts": "flake-parts",
+        "get-shit-done": "get-shit-done",
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_2"
       }

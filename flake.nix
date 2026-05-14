@@ -28,6 +28,10 @@
       url = "github:danielmiessler/fabric";
       flake = false;
     };
+    get-shit-done = {
+      url = "github:gsd-build/get-shit-done";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {flake-parts, ...}:
