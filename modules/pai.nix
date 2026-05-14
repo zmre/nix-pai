@@ -263,6 +263,13 @@ in {
               else ""
             } $out/claude/agents/\n")
             perSystemConfig.pai.extraAgents}
+          mkdir -p $out/claude/commands
+          ${lib.strings.concatMapStrings (x: "cp -R ${x}${
+              if builtins.readFileType x == "directory"
+              then "/*"
+              else ""
+            } $out/claude/commands/\n")
+            perSystemConfig.pai.extraCommands}
         '';
 
         installPhase = ''
@@ -598,6 +605,13 @@ in {
 
           # Generic substitution for all *.md files in agents
           find $out/claude/agents -name "*.md" -type f | while read -r mdfile; do
+              substituteInPlace "$mdfile" \
+                  --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
+                  --replace-quiet @paiBasePath@ "$out"
+          done
+
+          # Generic substitution for all *.md files in commands
+          find $out/claude/commands -name "*.md" -type f | while read -r mdfile; do
               substituteInPlace "$mdfile" \
                   --replace-quiet @assistantName@ '${perSystemConfig.pai.assistantName}' \
                   --replace-quiet @paiBasePath@ "$out"

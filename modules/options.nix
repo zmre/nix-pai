@@ -1027,6 +1027,10 @@
           type = lib.types.listOf lib.types.path;
           default = [];
         };
+        extraCommands = lib.mkOption {
+          type = lib.types.listOf lib.types.path;
+          default = [];
+        };
         additionalCoreInstructions = lib.mkOption {
           type = lib.types.str;
           default = "";

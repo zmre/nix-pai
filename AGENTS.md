@@ -137,6 +137,7 @@ Key options in `modules/options.nix`:
 - `pai.extraSkills` - Additional skill directories to copy
 - `pai.extraHooks` - Additional hook files to copy
 - `pai.extraAgents` - Additional agent files to copy
+- `pai.extraCommands` - Additional command directories to copy
 - `pai.ollamaServer` - Ollama server URL (default: "127.0.0.1:11434")
 
 Claude-specific settings (`pai.claudeSettings.*`):
