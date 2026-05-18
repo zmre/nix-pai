@@ -452,6 +452,7 @@
                         "Bash(mkfs.ext4:*)"
                         "Bash( /dev/sda)"
                         "Bash(> /dev/sda)"
+                        "Read(./.dev.vars)"
                       ];
                       description = "Tool permissions to always deny. Use lib.mkAfter [...] to append to defaults.";
                     };
