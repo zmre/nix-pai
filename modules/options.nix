@@ -425,7 +425,6 @@
                         "Bash(wget:*)"
                         "Bash(rm:*)"
                         "Bash(git rm:*)"
-                        "Read(./.env)"
                       ];
                       description = "Tool permissions that require user confirmation. Use lib.mkAfter [...] to append to defaults.";
                     };
@@ -455,6 +454,22 @@
                         "Bash(> /dev/sda)"
                         "Read(./.dev.vars)"
                         "Read(./.dev.vars.iron)"
+
+                        # Block secrets in .env* files from being read
+                        # If you need env that is public to be read, then use .public.env
+                        # Claude docs: "Bare filenames follow gitignore semantics and match at any depth, so Read(.env) and Read(**/.env) are equivalent"
+                        "Read(.env)"
+                        "Read(.env.*)"
+                        "Read(//**/.env)" # blocks .env file reading from other project dirs
+                        # Also block bash-based reads of .env* files
+                        "Bash(cat .env*)"
+                        "Bash(cat **/.env*)"
+                        "Bash(head .env*)"
+                        "Bash(tail .env*)"
+                        "Bash(less .env*)"
+                        "Bash(more .env*)"
+                        "Bash(* .env *)" # should block any command referencing .env
+                        "Bash(* .env.* *)" # should block any command referencing .env.whatever
                       ];
                       description = "Tool permissions to always deny. Use lib.mkAfter [...] to append to defaults.";
                     };
