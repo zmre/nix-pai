@@ -437,6 +437,7 @@
                         "Bash(gcloud:*)"
                         "Bash(kubectl:*)"
                         "Bash(vault:*)"
+                        "Bash(ironhide:*)"
                         "Bash(diskutil:*)"
                         "Bash(rm -rf /)"
                         "Bash(rm -rf /*)"
@@ -453,6 +454,7 @@
                         "Bash( /dev/sda)"
                         "Bash(> /dev/sda)"
                         "Read(./.dev.vars)"
+                        "Read(./.dev.vars.iron)"
                       ];
                       description = "Tool permissions to always deny. Use lib.mkAfter [...] to append to defaults.";
                     };
