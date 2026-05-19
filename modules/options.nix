@@ -392,6 +392,8 @@
                         "Bash(fabric:*)"
                         "Bash(gemini:*)"
                         "Bash(codex:*)"
+                        "Bash(gsd-sdk *)"
+                        "Bash(gsd-tools *)"
 
                         # Web
                         "WebSearch"
