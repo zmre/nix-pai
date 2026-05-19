@@ -394,6 +394,8 @@
                         "Bash(codex:*)"
                         "Bash(gsd-sdk *)"
                         "Bash(gsd-tools *)"
+                        "Write(.planning/**)"
+                        "Edit(.planning/**)"
 
                         # Web
                         "WebSearch"
