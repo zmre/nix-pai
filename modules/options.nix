@@ -325,13 +325,15 @@
                         "Bash(just:*)"
 
                         # Node.js ecosystem
-                        "Bash(npm:*)"
-                        "Bash(pnpm:*)"
-                        "Bash(npx:*)"
-                        "Bash(yarn:*)"
-                        "Bash(node:*)"
-                        "Bash(bun:*)"
-                        "Bash(tsc:*)"
+                        "Bash(npm *)"
+                        "Bash(pnpm *)"
+                        "Bash(npx *)"
+                        "Bash(yarn *)"
+                        "Bash(yarn lint *)"
+                        "Bash(node *)"
+                        "Bash(node --check *)"
+                        "Bash(bun *)"
+                        "Bash(tsc *)"
 
                         # Scala
                         "Bash(sbt:*)"

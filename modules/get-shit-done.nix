@@ -15,14 +15,14 @@
   sdkDeps = fetchNpmDeps {
     name = "get-shit-done-sdk-deps";
     src = "${src}/sdk";
-    hash = "sha256-J1q7AnLMYRoKFgijBopRwaRU5gHhzXp64UDR8feGd8Y=";
+    hash = "sha256-XxKXo2RFULtw8JdUpomuwi7V3HRNFutNl5AT87YX75w=";
   };
 in
   buildNpmPackage {
     pname = "get-shit-done-cc";
     inherit version src nodejs;
 
-    npmDepsHash = "sha256-aJYBiY33C9puffkRFIwFDmL35V1oKZ4HmVJ9Hb9Tfgs=";
+    npmDepsHash = "sha256-DWHv+3UiTleDM8KA2zzg3aZzKpSj81ASMK92l+Fof7E=";
 
     nativeBuildInputs = [makeWrapper];
 
