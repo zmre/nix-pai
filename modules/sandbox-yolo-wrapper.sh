@@ -143,6 +143,8 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
     RESOLVED_TMP=$(cd "$SANDBOX_HOME" && pwd -P)
     RESOLVED_PROJECT=$(cd "$PROJECT_DIR" && pwd -P)
 
+    DUDIR="$(dirname "$(getconf DARWIN_USER_CACHE_DIR)")"   # /var/folders/0x/sppmy…
+
     # Handle /tmp which may differ from TMPDIR
     SLASH_TMP="/private/tmp"
     if [ -d "/tmp" ]; then
@@ -175,6 +177,31 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
     (subpath \"/cores\")
     (subpath \"/Applications\")
     (subpath \"/Volumes\"))
+
+; per-user Darwin cache/temp
+(allow file-read* file-write* (subpath \"$DUDIR\"))
+
+; Xcode/Metal dev-support + toolchain (read + exec)
+(allow file-read* process-exec
+    (subpath \"$HOME/Library/Developer\")
+    (subpath \"$HOME/Library/Caches/com.apple.dt.Xcode\")
+    (subpath \"$HOME/Library/Caches/org.llvm.clang\")
+    (subpath \"$HOME/Library/Caches/org.swift.swiftpm\"))
+
+; services Xcode/Metal/TLS need
+(allow mach-lookup
+    (global-name \"com.apple.FSEvents\")
+    (global-name \"com.apple.coreservices.launchservicesd\")
+    (global-name \"com.apple.SecurityServer\")
+    (global-name \"com.apple.trustd.agent\")
+    (global-name-regex #\"^com\.apple\.(dt|metal|MTL|gpu)\"))
+
+; needed if you also want to RUN GPU inference in-sandbox (not just build):
+(allow iokit-open
+    (iokit-user-client-class \"IOAccelerator\")
+    (iokit-user-client-class \"AGXDeviceUserClient\")
+    (iokit-user-client-class \"IOGPU\"))
+(allow iokit-get-properties)
 
 ; Nix store (read-only) - required for all nix dependencies
 (allow file-read* (subpath \"/nix\"))
