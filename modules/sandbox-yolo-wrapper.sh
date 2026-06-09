@@ -194,8 +194,11 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
     (global-name \"com.apple.coreservices.launchservicesd\")
     (global-name \"com.apple.SecurityServer\")
     (global-name \"com.apple.trustd.agent\")
-    (global-name-regex #\"^com\.apple\.(dt|metal|MTL|gpu)\"))
     (global-name \"com.apple.bsd.dirhelper\")
+    (global-name \"com.apple.mobileassetd.v2\")
+    (global-name \"com.apple.mobileassetd\")
+    (global-name \"com.apple.security.cryptexd\")
+    (global-name-regex #\"^com\.apple\.(dt|metal|MTL|gpu)\"))
 
 ; needed if you also want to RUN GPU inference in-sandbox (not just build):
 (allow iokit-open
