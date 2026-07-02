@@ -7,8 +7,8 @@ instructions = '''
   Go read @@paiBasePath@/claude/skills/CORE/SKILL.md for base instructions. Then acknowledge you've read this by saying, "@assistantName@ setup complete." 
 '''
 
-[model_providers.ollama]
-name = "ollama"
+[model_providers.ollama-local]
+name = "ollama-local"
 base_url = "@ollamaHost@/v1"
 
 [shell_environment_policy]
