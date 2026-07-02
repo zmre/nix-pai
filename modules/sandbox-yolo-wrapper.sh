@@ -107,12 +107,12 @@ fi
 
 if [ -f "$REAL_HOME/.config/git/config" ]; then
   mkdir -p "$SANDBOX_HOME/.config/git"
-  cat ~/.config/git/config | egrep '(\[user\]|email =|name =)' > "$SANDBOX_HOME/.config/.git/config"
+  cat "$REAL_HOME/.config/git/config" | grep -E '(\[user\]|email =|name =)' > "$SANDBOX_HOME/.config/git/config"
 fi
 
-if [ -d "$REAL_HOME/.config/direnv" ]; then
-  mkdir -p "$SANDBOX_HOME/.config/direnv"
-  cp -R "$REAL_HOME/.config/direnv/*" "$SANDBOX_HOME/.config/direnv/"
+if [ -d "$REAL_HOME/.config/direnv/lib" ]; then
+  mkdir -p "$SANDBOX_HOME/.config/direnv/"
+  cp -R "$REAL_HOME/.config/direnv/lib" "$SANDBOX_HOME/.config/direnv/"
 fi
 
 # Copy .claude directory contents (settings, history, and on Linux the
