@@ -229,6 +229,7 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
 
 ; Parent directory (read-only) - for monorepo dependency access
 (allow file-read* (subpath \"$RESOLVED_PARENT\"))
+(allow file-write* (subpath \"$RESOLVED_PARENT/.bare\"))
 
 ; Sandbox home (read/write) - isolated temporary home
 (allow file-read* (subpath \"$RESOLVED_TMP\"))
