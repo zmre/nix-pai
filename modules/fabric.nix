@@ -14,8 +14,8 @@
   # Fabric static configuration via environment variables
   fabricEnvVars = {
     # Default vendor and model
-    DEFAULT_VENDOR = "Anthropic";
-    DEFAULT_MODEL = "claude-sonnet-4-5-20250929";
+    DEFAULT_VENDOR = "OpenAI";
+    DEFAULT_MODEL = "gpt-5.4-pro";
 
     # Patterns configuration - point to nix store
     CUSTOM_PATTERNS_DIRECTORY = "${pkgs.fabric-ai.src}/data/patterns";
