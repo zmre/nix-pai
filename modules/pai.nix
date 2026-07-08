@@ -94,6 +94,12 @@ in {
               (perSystemConfig.pai.claudeSettings.permissions or {})
               // {
                 disableBypassPermissionsMode = null; # Allow bypass in sandbox
+                # Applied after module merge, so this clears ask rules from
+                # extending configs too (ask rules prompt even in bypass mode,
+                # which blocks autonomous sandbox runs). Deny rules still apply.
+                # We assume things like "rm" are okay in this sandbox since the AI
+                # is contained and can't damage other parts of the system.
+                ask = [];
               };
           }
         )
