@@ -297,9 +297,8 @@
                       default = [
                         # this will result in a path like "//nix/store/wkcx98..." -- that double slash is necessary for
                         # an absolute filesystem path instead of a project relative one
+                        # Read(path) rules cover all file-reading tools (Read/Glob/Grep)
                         "Read(/@paiBasePath@**)"
-                        "Glob(/@paiBasePath@*)"
-                        "Grep(/@paiBasePath@*)"
                         "Skill(*)" # not sure which should work
                         "Skill(:*)"
                         "Skill(claude:*)"
@@ -396,7 +395,7 @@
                         "Bash(codex:*)"
                         "Bash(gsd-sdk *)"
                         "Bash(gsd-tools *)"
-                        "Write(.planning/**)"
+                        # Edit(path) rules cover all file-editing tools (Edit/Write/NotebookEdit)
                         "Edit(.planning/**)"
 
                         # Web
@@ -410,15 +409,8 @@
                         "Read(/tmp/**)"
                         "Bash(cat @paiBasePath@:*)"
                         "Read(/@paiBasePath@/claude/**)"
-                        "Glob(/@paiBasePath@/claude/*)"
-                        "Grep(/@paiBasePath@/claude/*)"
-                        "Write(./**)"
-                        "Write(//tmp/**)"
                         "Edit(./**)"
                         "Edit(//tmp/**)"
-                        "Glob(./*)"
-                        "Grep(./*)"
-                        "NotebookEdit(./*)"
                       ];
                       description = "Tool permissions to allow. Use lib.mkAfter [...] to append to defaults.";
                     };
