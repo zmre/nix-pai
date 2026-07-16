@@ -286,6 +286,12 @@ in {
           cp "${localsrc}/modules/claude-wrapper.sh" $out/bin/${perSystemConfig.pai.commandName}
           chmod +x $out/bin/${perSystemConfig.pai.commandName}
 
+          # Fleet CLI: summarize running Claude instances (terminal + sketchybar).
+          ${lib.optionalString perSystemConfig.pai.fleet.enable ''
+            cp "${localsrc}/modules/fleet-cli.sh" $out/bin/pai-fleet
+            chmod +x $out/bin/pai-fleet
+          ''}
+
           ###########################################
           # SECTION 4: Create opencode wrapper (if enabled)
           ###########################################
@@ -332,6 +338,12 @@ in {
           # Use --chmod=u+w to ensure all files are writable (nix store sources are read-only)
           mkdir -p $out/claude
           rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' --exclude='settings.json' --exclude='mcp.json' "${localsrc}/claude/" "$out/claude/"
+
+          # Ensure the fleet tracking hook is executable regardless of the
+          # committed file mode (it is invoked directly as a hook command).
+          ${lib.optionalString perSystemConfig.pai.fleet.enable ''
+            [ -f $out/claude/hooks/fleet-track.sh ] && chmod +x $out/claude/hooks/fleet-track.sh
+          ''}
 
           # Copy generated JSON config files from writeText derivations
           # Files need chmod u+w since nix store sources are read-only
@@ -477,6 +489,13 @@ in {
               --replace-quiet @automaticPrivacy@ '${lib.boolToString perSystemConfig.pai.automaticPrivacy}' \
               --replace-quiet @paiEnvPath@ '${envPathBase}' \
               --replace-quiet @privateModel@ '${perSystemConfig.pai.privateModel}'
+
+          # Fleet CLI substitutions (if enabled)
+          ${lib.optionalString perSystemConfig.pai.fleet.enable ''
+            substituteInPlace $out/bin/pai-fleet \
+                --replace-quiet @paiEnvPath@ '${envPathBase}' \
+                --replace-quiet @commandName@ '${perSystemConfig.pai.commandName}'
+          ''}
 
           # Router config substitutions (if enabled)
           ${lib.optionalString perSystemConfig.pai.automaticPrivacy ''
@@ -655,56 +674,92 @@ in {
 
       # Set base hook configurations via lib.mkBefore (enables lib.mkAfter merging)
       # Users can use lib.mkAfter to append their hooks after these base hooks
-      pai.claudeSettings.hooks = {
-        UserPromptSubmit = lib.mkBefore [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = "@paiBasePath@/claude/hooks/update-tab-titles.js";
-              }
-            ];
-          }
-        ];
-        SessionStart = lib.mkBefore [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = "@paiBasePath@/claude/hooks/load-core-context.js";
-              }
-              {
-                type = "command";
-                command = "@paiBasePath@/claude/hooks/initialize-pai-session.js";
-              }
-            ];
-          }
-        ];
-        Stop = lib.mkBefore [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = "@paiBasePath@/claude/hooks/stop-hook.js";
-              }
-              {
-                type = "command";
-                command = "@paiBasePath@/claude/hooks/capture-all-events.js --event-type Stop";
-              }
-            ];
-          }
-        ];
-        PermissionRequest = lib.mkBefore [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = "@paiBasePath@/claude/hooks/permission-prompt-hook.js";
-              }
-            ];
-          }
-        ];
-      };
+      pai.claudeSettings.hooks = let
+        # Fleet tracking hook, wired onto lifecycle events when enabled. Bash +
+        # jq, so referenced as .sh directly (no .ts->.js compile step).
+        fleet = event:
+          lib.optional perSystemConfig.pai.fleet.enable {
+            type = "command";
+            command = "@paiBasePath@/claude/hooks/fleet-track.sh ${event}";
+          };
+      in
+        {
+          UserPromptSubmit = lib.mkBefore [
+            {
+              hooks =
+                [
+                  {
+                    type = "command";
+                    command = "@paiBasePath@/claude/hooks/update-tab-titles.js";
+                  }
+                ]
+                ++ fleet "UserPromptSubmit";
+            }
+          ];
+          SessionStart = lib.mkBefore [
+            {
+              hooks =
+                [
+                  {
+                    type = "command";
+                    command = "@paiBasePath@/claude/hooks/load-core-context.js";
+                  }
+                  {
+                    type = "command";
+                    command = "@paiBasePath@/claude/hooks/initialize-pai-session.js";
+                  }
+                ]
+                ++ fleet "SessionStart";
+            }
+          ];
+          Stop = lib.mkBefore [
+            {
+              hooks =
+                [
+                  {
+                    type = "command";
+                    command = "@paiBasePath@/claude/hooks/stop-hook.js";
+                  }
+                  {
+                    type = "command";
+                    command = "@paiBasePath@/claude/hooks/capture-all-events.js --event-type Stop";
+                  }
+                ]
+                ++ fleet "Stop";
+            }
+          ];
+          PermissionRequest = lib.mkBefore [
+            {
+              hooks =
+                [
+                  {
+                    type = "command";
+                    command = "@paiBasePath@/claude/hooks/permission-prompt-hook.js";
+                  }
+                ]
+                ++ fleet "PermissionRequest";
+            }
+          ];
+        }
+        // lib.optionalAttrs perSystemConfig.pai.fleet.enable {
+          Notification = lib.mkBefore [
+            {
+              hooks = fleet "Notification";
+            }
+          ];
+          # Flip a waiting/permission instance back to running once a tool
+          # actually runs (i.e. the permission was granted).
+          PostToolUse = lib.mkBefore [
+            {
+              hooks = fleet "PostToolUse";
+            }
+          ];
+          SessionEnd = lib.mkBefore [
+            {
+              hooks = fleet "SessionEnd";
+            }
+          ];
+        };
     };
   };
 }

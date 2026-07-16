@@ -8,6 +8,11 @@ export DA_COLOR="@assistantColor@"
 export ENGINEER_NAME="${ENGINEER_NAME:-@userFullName@}"
 export PATH="@paiBasePath@/bin:@paiEnvPath@:$PATH"
 
+# Fleet tracking: record this launcher's pid (preserved across the `exec claude`
+# below) so the fleet watcher can distinguish live instances from quit ones.
+export PAI_LAUNCH_PID=$$
+export PAI_FLEET_DIR="${PAI_FLEET_DIR:-/tmp/pai-fleet}"
+
 # disable telemetry and udpate checks
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 

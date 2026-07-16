@@ -136,6 +136,19 @@
           };
         };
 
+        fleet = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Track running Claude instances (including sandboxed yolo ones) to
+              /tmp/pai-fleet via lifecycle hooks, and expose the
+              `pai-fleet` CLI that summarizes their state. Feeds the
+              sketchybar widget. Set PAI_FLEET_DIR to override the location.
+            '';
+          };
+        };
+
         # MCP servers configuration - generated as mcp.json at build time
         mcpServers = lib.mkOption {
           type = lib.types.attrsOf (lib.types.submodule {

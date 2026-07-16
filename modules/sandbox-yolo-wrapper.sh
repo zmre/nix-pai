@@ -254,6 +254,8 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
         PAI_DIR="@paiBasePath@"
         DA="@assistantName@"
         PAI_SANDBOX_MODE="true"
+        PAI_LAUNCH_PID="$$"
+        PAI_FLEET_DIR="${PAI_FLEET_DIR:-/tmp/pai-fleet}"
     )
 
     if [[ "$PRIVATE_MODE" == "true" ]]; then
@@ -291,6 +293,8 @@ else
         --setenv PAI_DIR "@paiBasePath@"
         --setenv DA "@assistantName@"
         --setenv PAI_SANDBOX_MODE "true"
+        --setenv PAI_LAUNCH_PID "$$"
+        --setenv PAI_FLEET_DIR "${PAI_FLEET_DIR:-/tmp/pai-fleet}"
     )
 
     # Add lib paths if they exist
