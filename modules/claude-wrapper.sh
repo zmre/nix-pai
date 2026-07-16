@@ -77,9 +77,14 @@ for license_file in LICENSE LICENSE.md LICENSE.txt; do
     fi
 done
 
-printf "No OSS license or .agent-config.toml detected. Start in private mode (routes to local ollama)? [y/N] "
-read -r answer
-case "$answer" in
-    [yY]|[yY][eE][sS]) use_private_mode "$@" ;;
-    *) use_normal_mode "$@" ;;
-esac
+if [ -t 0 ]; then
+  printf "No OSS license or .agent-config.toml detected. Start in private mode (routes to local ollama)? [y/N] "
+  read -r answer
+  case "$answer" in
+      [yY]|[yY][eE][sS]) use_private_mode "$@" ;;
+      *) use_normal_mode "$@" ;;
+  esac
+else
+  echo "No TTY so assuming non-private mode is wanted."
+  use_normal_mode "$@"
+fi
