@@ -6,7 +6,7 @@ export PAI_DIR="@paiBasePath@"
 export DA="@assistantName@"
 export DA_COLOR="@assistantColor@"
 export ENGINEER_NAME="${ENGINEER_NAME:-@userFullName@}"
-export PATH="@paiBasePath@/bin:@paiEnvPath@:$PATH"
+export PATH="@paiBasePath@/bin:@paiEnvPath@:/run/current-system/sw/bin:$PATH"
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 
 PLATFORM="$(uname -s)"
@@ -250,7 +250,7 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
     # Build env command with optional private mode variables
     ENV_CMD=(env
         HOME="$SANDBOX_HOME"
-        PATH="@paiBasePath@/bin:@paiEnvPath@:$PATH"
+        PATH="@paiBasePath@/bin:@paiEnvPath@:/run/current-system/sw/bin:$PATH"
         PAI_DIR="@paiBasePath@"
         DA="@assistantName@"
         PAI_SANDBOX_MODE="true"
@@ -289,7 +289,7 @@ else
         --ro-bind /bin /bin
         --ro-bind /etc /etc
         --setenv HOME "$HOME"
-        --setenv PATH "@paiBasePath@/bin:@paiEnvPath@:$PATH"
+        --setenv PATH "@paiBasePath@/bin:@paiEnvPath@:/run/current-system/sw/bin:$PATH"
         --setenv PAI_DIR "@paiBasePath@"
         --setenv DA "@assistantName@"
         --setenv PAI_SANDBOX_MODE "true"
