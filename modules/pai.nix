@@ -139,10 +139,13 @@ in {
           typescript-language-server # lsp for js/ts
           #svelte-language-server # lsp for svelte not supported yet
           svelte-language-server # lsp for svelte not supported yet
-          sourcekit-lsp # lsp for swift and c-based languages
           lua-language-server # lsp for lua
         ]
         ++ perSystemConfig.pai.extraPackages
+        # sourcekit-lsp (swift) is Darwin-only: on x86_64-linux it pulls in a
+        # from-source swift build that fails (vendored clang-16 rejects
+        # -mtls-dialect=gnu2 from the newer stdenv). Swift dev happens on macOS.
+        ++ lib.optionals stdenv.isDarwin [sourcekit-lsp] # lsp for swift and c-based languages
         ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
         ++ lib.optionals (stdenv.isLinux && perSystemConfig.pai.sandboxYolo.enable) [bubblewrap];
 
