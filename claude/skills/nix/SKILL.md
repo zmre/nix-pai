@@ -157,6 +157,22 @@ Options to accept nixConfig settings:
 
 See `reference/caching-and-direnv.md` for detailed Cachix setup.
 
+### Publishing a Cache for Other People
+
+A cache that speeds up *your* CI is not the same problem as a cache that makes
+`nix run github:you/proj` download instead of compile. **READ
+`workflows/binary-cache-distribution.md` before answering or acting on any of:**
+
+- Users report `nix run` / `nix profile install` building from source despite a cache
+- A path 404s from the cache even though CI pushed it (LRU eviction, not push failure)
+- `cachix pin`, GC/retention, free-tier quota, `pushFilter`, or "cache is full"
+- Which flake attribute consumers actually resolve to, per system
+- A wrapper that `cp`s rather than symlinks (closure may not contain the binary)
+- `ignoring untrusted flake configuration setting 'extra-substituters'`
+- Choosing between Cachix / Garnix / R2 / Attic / FlakeHub for public distribution
+
+Do not answer these from memory — the failure modes are counterintuitive.
+
 ---
 
 ## Flake Helper Libraries
@@ -273,6 +289,7 @@ Load these as needed for specific tasks:
 | Python project flake | `workflows/python-flake.md` |
 | TypeScript project flake | `workflows/typescript-flake.md` |
 | GitHub Actions + Cachix | `workflows/ci-caching.md` |
+| Publishing a cache consumers can actually use (pins, GC, trust) | `workflows/binary-cache-distribution.md` |
 | Multi-host OS config | `workflows/dendritic-pattern.md` |
 
 ## Reference Materials

@@ -2,6 +2,11 @@
 
 Optimize CI builds with Determinate Systems actions and Cachix binary caching.
 
+> Scope: making **CI** fast. If the goal is that *other people* get downloads
+> instead of compiles (`nix run github:you/proj`), read
+> `workflows/binary-cache-distribution.md` — pushing alone does not achieve
+> that, and free-tier GC evicts release artifacts first.
+
 ---
 
 ## Core Actions Setup
