@@ -179,7 +179,7 @@ nix build --option sandbox relaxed  # Debugging only
 
 ```nix
 meta.platforms = lib.platforms.linux;
-buildInputs = lib.optionals stdenv.isDarwin [ darwin.apple_sdk.frameworks.Security ];
+buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ darwin.apple_sdk.frameworks.Security ];
 ```
 
 ### "derivation has no outputs"

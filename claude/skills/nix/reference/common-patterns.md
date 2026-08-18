@@ -71,10 +71,10 @@ pythonSet.overrideScope (
 ```nix
 buildInputs = with pkgs; [
   common-dep
-] ++ lib.optionals stdenv.isDarwin [
+] ++ lib.optionals stdenv.hostPlatform.isDarwin [
   darwin.apple_sdk.frameworks.Security
   libiconv
-] ++ lib.optionals stdenv.isLinux [
+] ++ lib.optionals stdenv.hostPlatform.isLinux [
   gtk3
   webkitgtk
 ];
@@ -85,7 +85,7 @@ buildInputs = with pkgs; [
 ```nix
 packages = {
   default = myPackage;
-} // lib.optionalAttrs pkgs.stdenv.isDarwin {
+} // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
   macApp = macOSAppBundle;
 };
 ```
@@ -93,7 +93,7 @@ packages = {
 ### `lib.optionalString` for Strings
 
 ```nix
-BINDGEN_EXTRA_CLANG_ARGS = lib.optionalString stdenv.isLinux
+BINDGEN_EXTRA_CLANG_ARGS = lib.optionalString stdenv.hostPlatform.isLinux
   "-isystem ${stdenv.cc.libc.dev}/include";
 ```
 

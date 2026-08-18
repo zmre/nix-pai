@@ -118,18 +118,18 @@ Filter sources to avoid unnecessary rebuilds:
       commonNativeBuildInputs = with pkgs; [
         pkg-config
         llvmPackages.libclang
-      ] ++ (pkgs.lib.optionals pkgs.stdenv.isDarwin [
+      ] ++ (pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
         pkgs.apple-sdk
       ]);
 
       # Shared build inputs
       commonBuildInputs = with pkgs; [
         openssl
-      ] ++ (pkgs.lib.optionals pkgs.stdenv.isLinux [
+      ] ++ (pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         gtk3
         glib
         webkitgtk_4_1
-      ]) ++ (pkgs.lib.optionals pkgs.stdenv.isDarwin [
+      ]) ++ (pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
         darwin.apple_sdk.frameworks.Security
         darwin.apple_sdk.frameworks.SystemConfiguration
       ]);
@@ -139,7 +139,7 @@ Filter sources to avoid unnecessary rebuilds:
         LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
         # Linux-specific bindgen config
         BINDGEN_EXTRA_CLANG_ARGS =
-          pkgs.lib.optionalString pkgs.stdenv.isLinux
+          pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux
           "-isystem ${pkgs.stdenv.cc.libc.dev}/include";
       };
 ```
@@ -213,7 +213,7 @@ Integrate with `nix flake check`:
       # Checks run by `nix flake check`
       checks = {
         inherit (packages) my-project clippy fmt tests;
-      } // pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin {
+      } // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         # Darwin-only checks
         inherit (packages) macos-specific-check;
       };
@@ -256,7 +256,7 @@ Create distributable archives:
         packages = with pkgs; [
           cargo-watch
           rust-analyzer
-        ] ++ (pkgs.lib.optionals pkgs.stdenv.isDarwin [
+        ] ++ (pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
           # macOS-specific dev tools
         ]);
 
@@ -288,7 +288,7 @@ Create distributable archives:
 | `craneLib.buildDepsOnly` | Cache dependencies separately |
 | `craneLib.cleanCargoSource` | Filter to only Cargo-relevant files |
 | `lib.cleanSourceWith + filter` | Custom source filtering |
-| `lib.optionals stdenv.isDarwin` | Platform-specific dependencies |
+| `lib.optionals stdenv.hostPlatform.isDarwin` | Platform-specific dependencies |
 | `builtins.fromTOML (builtins.readFile)` | Read version from Cargo.toml |
 | `craneLib.cargoClippy/cargoTest/cargoFmt` | Separate check packages |
 | `checks = { inherit ... }` | Enable `nix flake check` |

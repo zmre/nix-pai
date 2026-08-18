@@ -16,7 +16,7 @@ in {
       # which isn't available on Darwin. Also filter jeepney.io.trio from pythonImportsCheck
       # since it needs the `outcome` package (a trio dependency not present).
       darwinFixesOverlay = final: prev:
-        lib.optionalAttrs prev.stdenv.isDarwin {
+        lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin {
           pythonPackagesExtensions =
             prev.pythonPackagesExtensions
             ++ [
@@ -145,9 +145,9 @@ in {
         # sourcekit-lsp (swift) is Darwin-only: on x86_64-linux it pulls in a
         # from-source swift build that fails (vendored clang-16 rejects
         # -mtls-dialect=gnu2 from the newer stdenv). Swift dev happens on macOS.
-        ++ lib.optionals stdenv.isDarwin [sourcekit-lsp] # lsp for swift and c-based languages
-        ++ lib.optionals stdenv.isLinux [libsecret] # libsecret provides secret-tool on linux
-        ++ lib.optionals (stdenv.isLinux && perSystemConfig.pai.sandboxYolo.enable) [bubblewrap];
+        ++ lib.optionals stdenv.hostPlatform.isDarwin [sourcekit-lsp] # lsp for swift and c-based languages
+        ++ lib.optionals stdenv.hostPlatform.isLinux [libsecret] # libsecret provides secret-tool on linux
+        ++ lib.optionals (stdenv.hostPlatform.isLinux && perSystemConfig.pai.sandboxYolo.enable) [bubblewrap];
 
       localPath = pkgs.lib.makeBinPath hiddenPackages;
 
@@ -210,7 +210,7 @@ in {
       # function returning the command for fetching secrets
       # Security: secret names are quoted to prevent shell injection
       secretLookup = secretname:
-        if pkgs.stdenv.isLinux
+        if pkgs.stdenv.hostPlatform.isLinux
         then ''$(secret-tool lookup api '${secretname}' 2>/dev/null | tr -d \"\n\")''
         else ''$(security find-generic-password -l '${secretname}' -g -w 2>/dev/null | tr -d \"\n\")'';
 

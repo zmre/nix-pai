@@ -27,7 +27,7 @@
     OLLAMA_API_URL = "${perSystemConfig.pai.ollamaServer}";
   };
 
-  buildInputs = [pkgs.fabric-ai pkgs.yt-dlp] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.libsecret];
+  buildInputs = [pkgs.fabric-ai pkgs.yt-dlp] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [pkgs.libsecret];
 
   # Build wrapped fabric executable
   mkFabricWrapper = pkgs.stdenvNoCC.mkDerivation {
