@@ -75,7 +75,7 @@
           };
           enableGemini = lib.mkOption {
             type = lib.types.bool;
-            default = true;
+            default = false; # TODO: changing to default off right now because they've deprecated gemini-cli and we need to research the new antigravity-cli stuff
             description = "Gemini included and given an environment";
           };
           enableOpencode = lib.mkOption {
