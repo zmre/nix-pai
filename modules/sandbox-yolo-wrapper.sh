@@ -198,6 +198,16 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
     (subpath \"$HOME/Library/Caches/org.llvm.clang\")
     (subpath \"$HOME/Library/Caches/org.swift.swiftpm\"))
 
+; GUI apps launched inside the sandbox resolve their support directories via
+; getpwuid(), not \$HOME, so they land in the REAL home no matter what HOME is
+; set to. Grant only the per-bundle-id subtrees those apps need. Add a bundle
+; id here to support another GUI app; do not widen to ~/Library.
+;   com.zmre.mbr - mbr, the markdown viewer (WebKit website data + caches)
+(allow file-read* file-write*
+    (subpath \"$HOME/Library/Caches/com.zmre.mbr\")
+    (subpath \"$HOME/Library/WebKit/com.zmre.mbr\")
+    (literal \"$HOME/Library/Preferences/com.zmre.mbr.plist\"))
+
 ; services Xcode/Metal/TLS need
 (allow mach-lookup
     (global-name \"com.apple.FSEvents\")
@@ -246,6 +256,15 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
 (allow network-inbound)
 (allow system-socket)
 "
+
+    # Debug aid: print the exact profile this wrapper would apply, then exit.
+    # Lets sandbox problems be reproduced against the real profile instead of a
+    # hand-maintained copy in a test script, which silently drifts.
+    #   PAI_SANDBOX_DUMP_PROFILE=1 pai-sandbox-yolo > profile.sb
+    if [[ -n "${PAI_SANDBOX_DUMP_PROFILE:-}" ]]; then
+        printf '%s\n' "$SANDBOX_PROFILE"
+        exit 0
+    fi
 
     # Build env command with optional private mode variables
     ENV_CMD=(env

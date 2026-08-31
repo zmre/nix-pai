@@ -35,6 +35,103 @@
 ; IOKit for power management
 (allow iokit-open (iokit-registry-entry-class "RootDomainUserClient"))
 
+; === GUI application support ===
+; Everything in this section was derived from sandbox denial logs while
+; launching mbr (an AppKit + WKWebView markdown viewer), not guessed. Without
+; it the process reaches -[NSApplication run] and idles normally, but no
+; window ever appears and the Dock reports it as unresponsive.
+;
+; Deliberately NOT granted, because the window works without them: pasteboard
+; (clipboard), tccd (privacy-protected resources), audio, AppleEvents,
+; Spotlight, analytics/logd/diagnosticd, opendirectory membership,
+; DiskArbitration, pluginkit, and touchbar. Re-check the denial log before
+; adding any of those back.
+(allow mach-lookup
+    ; CoreAnimation render server. Every window is layer-backed, so without
+    ; this the window has no drawable surface and never appears on screen.
+    (global-name "com.apple.CARenderServer")
+    ; LaunchServices: bundle/UTI lookup and foreground-app activation.
+    (global-name "com.apple.CoreServices.coreservicesd")
+    (global-name "com.apple.lsd.mapdb")
+    ; AppKit activation helper.
+    (global-name "com.apple.hiservices-xpcservice")
+    ; Dock tile and app activation.
+    (global-name "com.apple.dock.server")
+    ; Window management (window proxies, Spaces/Stage Manager).
+    (global-name "com.apple.window_proxies")
+    (global-name "com.apple.windowmanager.server")
+    ; Text Services Manager: routes keyboard input into the window.
+    (global-name "com.apple.tsm.uiserver")
+    ; HID event system: mouse and keyboard events reach the window.
+    (global-name "com.apple.iohideventsystem")
+    ; Out-of-process AppKit views.
+    (global-name "com.apple.ViewBridgeAuxiliary")
+    ; Notifications AppKit posts during launch. Regex because the versioned
+    ; suffix on distributed_notifications changes between macOS releases.
+    (global-name "com.apple.system.notification_center")
+    (global-name-regex #"^com\.apple\.distributed_notifications")
+    ; Window restoration state.
+    (global-name "com.apple.appkit.restoration_storage")
+    ; Icon rendering for window/document proxy icons.
+    (global-name "com.apple.iconservices")
+    (global-name "com.apple.iconservices.store")
+    ; OpenGL/CoreVideo shader compiler service.
+    (global-name "com.apple.cvmsServ")
+    ; WKWebView is multi-process. Without its content, network and GPU
+    ; services the web view stays blank even once the window is drawable.
+    (global-name "com.apple.WebKit.WebContent")
+    (global-name "com.apple.WebKit.Networking")
+    (global-name "com.apple.WebKit.GPU")
+    ; WebKit gates its entire network stack on being able to reach the
+    ; NSURLSession daemon. It probes this with sandbox_check(), which is a
+    ; query rather than an access attempt, so denying it produces NO deny(1)
+    ; entry in the sandbox log -- it only surfaces as WebKit refusing to launch
+    ; both XPC services above with "Invalid connection identifier", logged
+    ; misleadingly as "Application does not have permission to communicate
+    ; with network resources". Do not remove: nothing will point you back here.
+    ; This grants no new reach, since network-outbound is already allowed.
+    (global-name "com.apple.nsurlsessiond")
+    ; RunningBoard hands out the process assertions WebKit uses to keep its GPU
+    ; and content processes awake. Without it every assertion dies instantly
+    ; ("Error acquiring assertion ... The connection does not exist"), so WebKit
+    ; suspends and resumes the GPU process in a loop and the page loads but
+    ; never paints -- a black window. Like nsurlsessiond, this failure is
+    ; silent: it logs no deny(1) entry.
+    (global-name "com.apple.runningboard")
+    ; Font server. Without it text has no fonts to lay out, and the app logs
+    ; "NOT IMPLEMENTED - CopyPropertiesForAllFonts".
+    (global-name "com.apple.fonts")
+    ; System TCC daemon. When a window manager attaches over the Accessibility
+    ; API, the app asks system TCC whether that client is authorised; blocked,
+    ; it cannot validate the client and ignores AX clients, leaving the window
+    ; unmanageable. Accessibility is a system-level permission, so the per-user
+    ; "com.apple.tccd" is NOT a substitute -- it was tested and does not work.
+    ; This lets sandboxed processes query TCC and trigger consent prompts. It
+    ; cannot grant permissions (prompts still need a click) and does not affect
+    ; the file rules above, which seatbelt enforces independently of TCC.
+    (global-name "com.apple.tccd.system"))
+
+; Per-pid ports AppKit registers on the app's behalf.
+(allow mach-register
+    (local-name "com.apple.tsm.portname")   ; text input
+    (local-name "com.apple.coredrag")       ; drag and drop
+    (local-name "com.apple.axserver"))      ; accessibility
+
+; IOSurface backs every window's drawing surface. IOHIDParam is read for input
+; device parameters such as key repeat rate.
+(allow iokit-open
+    (iokit-user-client-class "IOSurfaceRootUserClient")
+    (iokit-user-client-class "IOHIDParamUserClient"))
+
+; WebKit grants its own sandboxed child processes access to files and services
+; by issuing sandbox extensions. An extension can only delegate access this
+; process already holds, so this does not widen the sandbox beyond the
+; file-read*/file-write* rules above.
+(allow file-issue-extension
+    (extension-class "com.apple.app-sandbox.read")
+    (extension-class "com.apple.app-sandbox.read-write"))
+(allow mach-issue-extension)
+
 ; Pseudo-TTY for interactive use
 (allow pseudo-tty)
 (allow file-ioctl
