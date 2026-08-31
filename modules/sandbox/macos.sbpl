@@ -26,7 +26,11 @@
 ; Mach lookups for system services
 (allow mach-lookup
     (global-name "com.apple.system.opendirectoryd.libinfo")
-    (global-name "com.apple.PowerManagement.control"))
+    (global-name "com.apple.PowerManagement.control")
+    ; WindowServer connection - required for any AppKit GUI app (e.g. mbr's
+    ; tao/wry window). Without this, calls like NSScreen.mainScreen return nil
+    ; and the app panics on unwrap() before ever opening a window.
+    (global-name "com.apple.windowserver.active"))
 
 ; IOKit for power management
 (allow iokit-open (iokit-registry-entry-class "RootDomainUserClient"))
