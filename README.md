@@ -33,7 +33,6 @@ In both cases you'll be prompted for the password (API key).
 Here are the ones we have baked in. If you don't have any, the env var will be blank and no harm done:
 
 * openaikey
-* reftoolskey
 
 (I've made the list of secrets shorter as I realize how to log in to some tools with oauth. The reason to prefer oauth here is purely performance: each password fetch attempt slows down startup.)
 
@@ -116,14 +115,6 @@ Both `claudeSettings` and `mcpServers` are Nix options that generate `settings.j
         type = "stdio";
         command = "npx";
         args = ["-y" "@anthropic/mcp-playwright"];
-      };
-      # Override default Ref server settings (optional)
-      Ref = {
-        type = "http";
-        url = "https://api.ref.tools/mcp";
-        headers = {
-          "x-ref-api-key" = "\${REF_TOOLS_KEY}";
-        };
       };
     };
   };

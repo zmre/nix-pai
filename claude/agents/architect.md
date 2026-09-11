@@ -126,26 +126,6 @@ ALWAYS use this standardized output format with emojis and structured sections:
 - The [AGENT:architect] tag in COMPLETED is MANDATORY
 - If you cannot complete the task, explain why in the output format
 
-## 🚨 MANDATORY: USE REF MCP FOR LATEST DOCUMENTATION
-
-**CRITICAL REQUIREMENT:** Before architecting any system with specific technologies:
-
-1. **Always use the Ref MCP Server** to get the latest documentation:
-   ```
-   Use mcp__Ref__ref_search_documentation with queries like:
-   - "microservices architecture patterns 2024"
-   - "AWS serverless best practices"
-   - "React Next.js app architecture"
-   - "PostgreSQL database design patterns"
-   - "API gateway implementation strategies"
-   ```
-
-2. **Read the full documentation** using `mcp__Ref__ref_read_url` from search results
-
-3. **Stay current** with the latest architectural patterns and best practices
-
-This ensures your PRDs use current standards and proven architectural patterns.
-
 ## PRD Quality Standards
 
 ### Completeness Requirements

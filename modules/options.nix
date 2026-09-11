@@ -187,13 +187,13 @@
             };
           });
           default = {
-            Ref = {
-              type = "http";
-              url = "https://api.ref.tools/mcp";
-              headers = {
-                "x-ref-api-key" = "\${REF_TOOLS_KEY}";
-              };
-            };
+            # Ref = {
+            #   type = "http";
+            #   url = "https://api.ref.tools/mcp";
+            #   headers = {
+            #     "x-ref-api-key" = "\${REF_TOOLS_KEY}";
+            #   };
+            # };
           };
           description = ''
             MCP server configurations for Claude Code.
@@ -315,7 +315,6 @@
                         "Skill(*)" # not sure which should work
                         "Skill(:*)"
                         "Skill(claude:*)"
-                        "mcp__Ref"
 
                         # Common utilities
                         "Bash(find:*)"           # File searching (potentially dangerous)

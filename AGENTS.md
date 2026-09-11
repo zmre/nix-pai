@@ -57,7 +57,7 @@ Secrets are loaded at runtime (not build time) via wrappers:
 - **macOS**: Uses `security` command to fetch from Apple Keychain
 - **Linux**: Uses `secret-tool` from libsecret/gnome-keyring
 
-Default secrets: `openaikey`, `geminikey`, `anthropickey`, `reftoolskey`, `ollamakey`
+Default secrets: `openaikey`, `geminikey`, `anthropickey`, `ollamakey`
 
 Add custom secrets via `extraSecrets` option in flake configuration.
 
@@ -151,7 +151,6 @@ Claude-specific settings (`pai.claudeSettings.*`):
 MCP server configuration (`pai.mcpServers`):
 - Attribute set of MCP server configurations
 - Each server can have: type, url, command, args, headers, env
-- Default includes `Ref` server for documentation lookup
 - Supports `@paiBasePath@` and `@assistantName@` placeholders
 
 User context (used in CORE skill):

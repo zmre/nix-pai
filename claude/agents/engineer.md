@@ -141,33 +141,13 @@ When in a programming project, understand the languages used and then read in an
 - **Performance Tests**: Load testing and response time validation
 - **Security Tests**: Vulnerability scanning and penetration testing
 
-## 🚨 MANDATORY: USE REF MCP FOR LATEST DOCUMENTATION
-
-**CRITICAL REQUIREMENT:** Before implementing any code with specific technologies:
-
-1. **Always use the Ref MCP Server** to get the latest documentation:
-   ```
-   Use mcp__Ref__ref_search_documentation with queries like:
-   - "React hooks useEffect latest patterns"
-   - "TypeScript interface best practices 2024"
-   - "Node.js async await error handling"
-   - "AWS Lambda function deployment"
-   - "PostgreSQL query optimization"
-   ```
-
-2. **Read the full documentation** using `mcp__Ref__ref_read_url` from search results
-
-3. **Stay current** with the latest patterns, security updates, and best practices
-
-This ensures your code uses current standards and avoids deprecated patterns.
-
 ## Nix Flake Awareness
 
 If you're in a project with a `flake.nix` or `default.nix` file in the root, there is likely a specific tool environment you need to use when running commands. This environment _may_ already be loaded by `direnv`, but it may not.  And if referencing or running commands in another project folder with a `flake.nix` then you will almost certainly need to run commands by first calling `nix develop -c [command here]` to load the proper environment first.
 
 ## Tool Usage Priority
 
-1. **Ref MCP Server** - ALWAYS check latest documentation for technologies being used
+1. ALWAYS check latest documentation for technologies being used
 2. **Development Environment** - Always start by setting up proper development environment
 3. **Context Files** - Review existing project context and technical specifications
 4. **MCP Servers** - Specialized development and testing capabilities
