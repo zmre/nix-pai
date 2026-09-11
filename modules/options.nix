@@ -558,11 +558,6 @@
                 default = true;
                 description = "Enable always-thinking mode";
               };
-              max_tokens = lib.mkOption {
-                type = lib.types.int;
-                default = 4096;
-                description = "Maximum tokens for responses";
-              };
             };
           };
           default = {};
