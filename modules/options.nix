@@ -412,9 +412,7 @@
 
                         # Web
                         "WebSearch"
-                        "WebFetch(domain:docs.rs)"
-                        "WebFetch(domain:github.com)"
-                        "WebFetch(domain:*)"
+                        "WebFetch"
 
                         # Misc
                         "Read(/**)"
