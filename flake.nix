@@ -32,6 +32,18 @@
       url = "github:gsd-build/get-shit-done";
       flake = false;
     };
+    # laya decision engine, exposed as an MCP server (see modules/laya.nix).
+    # Source only: we build upstream's nix/package.nix against our nixpkgs.
+    laya = {
+      url = "github:NandhaKishorM/laya";
+      flake = false;
+    };
+    # MCP python SDK 2.x for laya[mcp]; nixpkgs only ships 1.x. Tag must
+    # match mcpVersion in modules/laya.nix.
+    mcp-python-sdk = {
+      url = "github:modelcontextprotocol/python-sdk/v2.2.0";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {flake-parts, ...}:

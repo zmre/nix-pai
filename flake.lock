@@ -105,6 +105,22 @@
         "type": "github"
       }
     },
+    "laya": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791221791,
+        "narHash": "sha256-IZxmMs1x3DgWxlf4Hf5g0bghhDVLGaHjmvhoQ0xxaf8=",
+        "owner": "NandhaKishorM",
+        "repo": "laya",
+        "rev": "a4a8921afebfd852bba0000475cfb6ab737a124c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NandhaKishorM",
+        "repo": "laya",
+        "type": "github"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -124,6 +140,23 @@
       "original": {
         "owner": "numtide",
         "repo": "llm-agents.nix",
+        "type": "github"
+      }
+    },
+    "mcp-python-sdk": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788795621,
+        "narHash": "sha256-nnpNXnQiFSGx5KQBDXHCOH0wE3cznlmI6s7vtchcj3A=",
+        "owner": "modelcontextprotocol",
+        "repo": "python-sdk",
+        "rev": "9972c21aa42054fb1450c5fc614761ed11847ec6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "modelcontextprotocol",
+        "ref": "v2.2.0",
+        "repo": "python-sdk",
         "type": "github"
       }
     },
@@ -179,7 +212,9 @@
         "fabric": "fabric",
         "flake-parts": "flake-parts",
         "get-shit-done": "get-shit-done",
+        "laya": "laya",
         "llm-agents": "llm-agents",
+        "mcp-python-sdk": "mcp-python-sdk",
         "nixpkgs": "nixpkgs_2"
       }
     },

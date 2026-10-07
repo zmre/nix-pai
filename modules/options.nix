@@ -83,6 +83,15 @@
             default = true;
             description = "OpenCode included and given an environment";
           };
+          enableLaya = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Register the laya typed-decision engine as a Claude MCP server.
+              Models load lazily on first tool call and download to the
+              Hugging Face cache (~/.cache/huggingface).
+            '';
+          };
         };
         fabric = {
           enable = lib.mkOption {

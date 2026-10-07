@@ -151,6 +151,11 @@ in {
 
       localPath = pkgs.lib.makeBinPath hiddenPackages;
 
+      layaMcpServer = pkgs.callPackage ./laya.nix {
+        layaSrc = inputs.laya;
+        mcpSrc = inputs.mcp-python-sdk;
+      };
+
       gsdSrcInfo = inputs.get-shit-done;
       get-shit-done = pkgs.callPackage ./get-shit-done.nix {
         src = gsdSrcInfo;
@@ -673,6 +678,23 @@ in {
       };
     in {
       packages.pai = pai;
+      packages.laya-mcp-server = layaMcpServer;
+
+      # stdio: Claude spawns it per session; LAYA_PRELOAD=0 keeps it idle (no
+      # torch/model load) until a laya tool is actually called.
+      pai.mcpServers = lib.mkIf perSystemConfig.pai.otherTools.enableLaya {
+        laya = {
+          type = lib.mkDefault "stdio";
+          command = lib.mkDefault "${layaMcpServer}/bin/laya-mcp-server";
+          env =
+            {LAYA_PRELOAD = lib.mkDefault "0";}
+            # Two parallel cold calls on MPS segfault inside transformers'
+            # ModernBERT rotary embedding; CPU is stable (~0.3s warm vs ~0.15s).
+            // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+              LAYA_DEVICE = lib.mkDefault "cpu";
+            };
+        };
+      };
 
       # Set base hook configurations via lib.mkBefore (enables lib.mkAfter merging)
       # Users can use lib.mkAfter to append their hooks after these base hooks
