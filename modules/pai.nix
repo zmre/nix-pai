@@ -151,7 +151,7 @@ in {
 
       localPath = pkgs.lib.makeBinPath hiddenPackages;
 
-      layaMcpServer = pkgs.callPackage ./laya.nix {
+      laya = pkgs.callPackage ./laya.nix {
         layaSrc = inputs.laya;
         mcpSrc = inputs.mcp-python-sdk;
       };
@@ -191,7 +191,8 @@ in {
         ++ lib.optionals perSystemConfig.pai.otherTools.enableOpencode [
           inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
           #ollama
-        ];
+        ]
+        ++ lib.optionals perSystemConfig.pai.otherTools.enableLaya [laya];
 
       binariesToWrap =
         ["claude"]
@@ -678,14 +679,14 @@ in {
       };
     in {
       packages.pai = pai;
-      packages.laya-mcp-server = layaMcpServer;
+      packages.laya = laya;
 
       # stdio: Claude spawns it per session; LAYA_PRELOAD=0 keeps it idle (no
       # torch/model load) until a laya tool is actually called.
       pai.mcpServers = lib.mkIf perSystemConfig.pai.otherTools.enableLaya {
         laya = {
           type = lib.mkDefault "stdio";
-          command = lib.mkDefault "${layaMcpServer}/bin/laya-mcp-server";
+          command = lib.mkDefault "${laya}/bin/laya-mcp-server";
           env =
             {LAYA_PRELOAD = lib.mkDefault "0";}
             # Two parallel cold calls on MPS segfault inside transformers'

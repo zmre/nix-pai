@@ -1,4 +1,5 @@
-# laya (https://github.com/NandhaKishorM/laya) MCP stdio server.
+# laya (https://github.com/NandhaKishorM/laya): the `laya` CLI and the
+# `laya-mcp-server` MCP stdio server.
 #
 # The laya library itself is built from upstream's own nix/package.nix, so it
 # tracks the `laya` flake input and `nix flake update` picks up new releases
@@ -12,7 +13,9 @@
 # the tag in flake.nix and `mcpVersion` below together.
 {
   lib,
+  stdenv,
   python3,
+  symlinkJoin,
   writeShellScriptBin,
   layaSrc,
   mcpSrc,
@@ -73,9 +76,30 @@
     }).laya;
 
   pyEnv = python.withPackages (ps: [laya ps.mcp]);
-in
+
   # -P: don't prepend cwd to sys.path, so a project checkout containing a
   # `laya/` dir can't shadow the packaged module.
-  writeShellScriptBin "laya-mcp-server" ''
+  mcpServer = writeShellScriptBin "laya-mcp-server" ''
     exec ${pyEnv}/bin/python -P -m laya.mcp.server "$@"
-  ''
+  '';
+
+  # On macOS default to CPU: for one-shot runs MPS init costs more than it
+  # saves (~3.5s vs ~4s warm). An explicit --device wins.
+  cli = writeShellScriptBin "laya" (''
+      device=()
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      case " $* " in
+        *" --device "* | *" --device="*) ;;
+        *) device=(--device cpu) ;;
+      esac
+    ''
+    + ''
+      exec ${pyEnv}/bin/python -P -m laya.cli "''${device[@]}" "$@"
+    '');
+in
+  symlinkJoin {
+    name = "laya-${laya.version}";
+    paths = [mcpServer cli];
+    meta.mainProgram = "laya";
+  }
