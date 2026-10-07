@@ -1,4 +1,6 @@
-{inputs, ...}: let
+# Applied with nix-pai's own flake inputs (see flake.nix importApply) so that
+# consumers importing flakeModules.default don't need to redeclare our inputs.
+{inputs}: {...}: let
   localsrc = ../.;
 in {
   imports = [./options.nix];

@@ -48,7 +48,9 @@
 
   outputs = inputs @ {flake-parts, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} ({...}: let
-      paiModule = ./modules/pai.nix;
+      # Bind our own inputs here; a flake module's `inputs` arg would otherwise
+      # be the consumer's flake inputs.
+      paiModule = flake-parts.lib.importApply ./modules/pai.nix {inherit inputs;};
     in {
       systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
 
@@ -56,7 +58,7 @@
 
       imports = [
         flake-parts.flakeModules.flakeModules
-        ./modules/pai.nix
+        paiModule
       ];
 
       flake.flakeModules.default = paiModule;
