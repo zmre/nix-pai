@@ -164,10 +164,16 @@
 ;
 ; BLOCKED (not in allow list):
 ;   - /Users/* (except specific project path)
-;   - ~/.ssh, ~/.aws, ~/.gnupg, ~/.kube
 ;   - All other user home directories
 ;
 ; (allow file-read-metadata) - broadly allowed for dyld/stat
 ; (allow network-outbound)
 ; (allow network-inbound)
 ; (allow system-socket)
+;
+; User-configured rules (pai.sandboxYolo.*), appended LAST:
+;   - additionalReadWritePaths -> (allow file-read* file-write* ...)
+;   - additionalReadOnlyPaths  -> (allow file-read* ...)
+;   - denyPaths                -> (deny file-read* file-write* ...)
+;     Emitted after every allow because seatbelt applies the last matching
+;     rule. Defaults: ~/.ssh ~/.gnupg ~/.aws ~/.kube ~/.config/gcloud

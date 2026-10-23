@@ -127,21 +127,67 @@
           };
 
           additionalReadWritePaths = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
+            type = lib.types.listOf (lib.types.strMatching "^(~|~/.*|/.*)$");
             default = [];
-            description = "Additional paths to allow read/write access in sandbox";
+            example = ["~/.cargo" "/data/scratch"];
+            description = ''
+              Additional host paths (absolute or ~-relative) to allow read/write
+              access in the sandbox. Changes persist on the host. Paths under ~
+              also appear at the same relative location inside the sandbox's
+              temporary $HOME (a bind on Linux, a symlink on macOS). Missing
+              paths are skipped at launch.
+            '';
           };
 
           additionalReadOnlyPaths = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
+            type = lib.types.listOf (lib.types.strMatching "^(~|~/.*|/.*)$");
             default = [];
-            description = "Additional paths to allow read-only access in sandbox";
+            example = ["~/Notes"];
+            description = ''
+              Additional host paths (absolute or ~-relative) to allow read-only
+              access in the sandbox. Paths under ~ also appear at the same
+              relative location inside the sandbox's temporary $HOME.
+            '';
           };
 
           denyPaths = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = ["~/.ssh" "~/.gnupg" "~/.aws" "~/.kube" "~/.config/gcloud"];
-            description = "Paths to explicitly deny access in sandbox";
+            type = lib.types.listOf (lib.types.strMatching "^(~|~/.*|/.*)$");
+            default = [];
+            example = ["~/.netrc"];
+            description = ''
+              Host paths to explicitly deny in the sandbox, even when they fall
+              under an allowed path (project parent, additional paths). Base
+              defaults (~/.ssh ~/.gnupg ~/.aws ~/.kube ~/.config/gcloud) are set
+              via lib.mkBefore; use lib.mkAfter [...] to append, lib.mkForce to
+              replace. Denies apply to real host paths only; they never affect
+              files placed in the sandbox home via copyFromHome.
+            '';
+          };
+
+          copyFromHome = lib.mkOption {
+            type = lib.types.listOf (lib.types.strMatching "^~/.+");
+            default = [];
+            example = ["~/.config/gh" "~/.npmrc"];
+            description = ''
+              Files or directories (must start with ~/) copied from the real
+              home into the sandbox's temporary home at launch, symlinks
+              dereferenced. Copies are discarded when the sandbox exits; use
+              additionalReadWritePaths for anything that must persist. Missing
+              paths are skipped with a warning.
+            '';
+          };
+
+          envFromCommands = lib.mkOption {
+            type = lib.types.attrsOf lib.types.str;
+            default = {};
+            example = {GH_TOKEN = "gh auth token";};
+            description = ''
+              Environment variables set inside the sandbox from the output of a
+              command run outside it (before launch, with the caller's PATH).
+              Useful for credentials kept in a keychain the sandbox cannot read,
+              e.g. gh on macOS. Values are visible to the AI by design. Commands
+              that fail or print nothing are skipped with a warning.
+            '';
           };
         };
 
@@ -316,179 +362,18 @@
                     };
                     allow = lib.mkOption {
                       type = lib.types.listOf lib.types.str;
-                      default = [
-                        # this will result in a path like "//nix/store/wkcx98..." -- that double slash is necessary for
-                        # an absolute filesystem path instead of a project relative one
-                        # Read(path) rules cover all file-reading tools (Read/Glob/Grep)
-                        "Read(/@paiBasePath@**)"
-                        "Skill(*)" # not sure which should work
-                        "Skill(:*)"
-                        "Skill(claude:*)"
-
-                        # Common utilities
-                        "Bash(find:*)"           # File searching (potentially dangerous)
-                        "Bash(ls:*)"
-                        "Bash(tree:*)"
-                        "Bash(wc:*)"
-                        "Bash(head:*)"
-                        "Bash(tail:*)"
-                        "Bash(diff:*)"
-                        "Bash(sort:*)"
-                        "Bash(uniq:*)"
-                        "Bash(cat:*)"
-                        "Bash(grep:*)"
-                        "Bash(jq:*)"
-
-                        # Common build commands
-                        "Bash(configure:*)"
-                        "Bash(make:*)"
-                        "Bash(just:*)"
-
-                        # Node.js ecosystem
-                        "Bash(npm *)"
-                        "Bash(pnpm *)"
-                        "Bash(npx *)"
-                        "Bash(yarn *)"
-                        "Bash(yarn lint *)"
-                        "Bash(node *)"
-                        "Bash(node --check *)"
-                        "Bash(bun *)"
-                        "Bash(tsc *)"
-
-                        # Scala
-                        "Bash(sbt:*)"
-                        "Bash(scala:*)"
-                        "Bash(scalac:*)"
-
-                        # Swift
-                        "Bash(xcodebuild:*)"
-                        "Bash(xcodegen generate:*)"
-                        "Bash(log show:*)"
-                        "Bash(log stream:*)"
-                        "Bash(swift:*)"
-                        "Bash(swiftc:*)"
-                        "Bash(swiftformat:*)"
-                        "Bash(swift-format:*)"
-                        "Bash(swiftlint:*)"
-                        "Bash(plutil:*)"
-                        "Bash(mdls:*)"
-
-                        # Git expansion
-                        "Bash(git status:*)"
-                        "Bash(git diff:*)"
-                        "Bash(git log:*)"
-                        "Bash(git branch:*)"
-                        "Bash(git checkout:*)"
-                        "Bash(git stash:*)"
-                        "Bash(git show:*)"
-                        "Bash(git fetch:*)"
-
-                        # Nix
-                        "Bash(nix:*)"            # All nix commands
-
-                        # Python
-                        "Bash(pip:*)"
-                        "Bash(uv:*)"
-                        
-                        # Rust
-                        "Bash(cargo:*)"
-                        "Bash(rustc:*)"
-                        "Bash(/target/release/:*)"
-                        "Bash(/target/debug/:*)"
-                        
-                        # Misc utilities
-                        "Bash(which:*)"          # Command location
-                        "Bash(type:*)"           # Command type
-                        "Bash(file:*)"           # File type detection
-                        "Bash(stat:*)"           # File statistics
-                        "Bash(realpath:*)"       # Path resolution
-                        "Bash(dirname:*)"        # Directory extraction
-                        "Bash(basename:*)"       # Basename extraction
-                        "Bash(readlink:*)"
-                        "Bash(rg:*)"
-                        "Bash(magick:*)"
-                        "Bash(vm_stat:*)"
-                        "Bash(wc:*)"
-
-                        # Other AI tools
-                        "Bash(fabric:*)"
-                        "Bash(gemini:*)"
-                        "Bash(codex:*)"
-                        "Bash(gsd-sdk *)"
-                        "Bash(gsd-tools *)"
-                        # Edit(path) rules cover all file-editing tools (Edit/Write/NotebookEdit)
-                        "Edit(.planning/**)"
-
-                        # Web
-                        "WebSearch"
-                        "WebFetch"
-
-                        # Misc
-                        "Read(/**)"
-                        "Read(/tmp/**)"
-                        "Bash(cat @paiBasePath@:*)"
-                        "Read(/@paiBasePath@/claude/**)"
-                        "Edit(./**)"
-                        "Edit(//tmp/**)"
-                      ];
-                      description = "Tool permissions to allow. Use lib.mkAfter [...] to append to defaults.";
+                      default = [];
+                      description = "Tool permissions to allow. nix-pai sets base rules via lib.mkBefore; use lib.mkAfter [...] to append, lib.mkForce [...] to replace.";
                     };
                     ask = lib.mkOption {
                       type = lib.types.listOf lib.types.str;
-                      default = [
-                        "Bash(sudo:*)"
-                        "Bash(git push:*)"
-                        "Bash(curl:*)"
-                        "Bash(wget:*)"
-                        "Bash(rm:*)"
-                        "Bash(git rm:*)"
-                      ];
-                      description = "Tool permissions that require user confirmation. Use lib.mkAfter [...] to append to defaults.";
+                      default = [];
+                      description = "Tool permissions that require user confirmation. nix-pai sets base rules via lib.mkBefore; use lib.mkAfter [...] to append, lib.mkForce [...] to replace.";
                     };
                     deny = lib.mkOption {
                       type = lib.types.listOf lib.types.str;
-                      default = [
-                        "Bash(aws:*)"
-                        "Bash(gcp:*)"
-                        "Bash(gcloud:*)"
-                        "Bash(kubectl:*)"
-                        "Bash(vault:*)"
-                        "Bash(ironhide:*)"
-                        "Bash(diskutil:*)"
-                        "Bash(rm -rf /)"
-                        "Bash(rm -rf /*)"
-                        "Bash(rm -rf ~)"
-                        "Bash(rm -rf $HOME)"
-                        "Bash(rm -rf $PAI_HOME)"
-                        "Bash(rm -rf $PAI_DIR)"
-                        "Bash(sudo rm -rf /)"
-                        "Bash(sudo rm -rf /*)"
-                        "Bash(fork bomb)"
-                        "Bash(dd :*)"
-                        "Bash(dd if=/dev/zero of=/dev/sda)"
-                        "Bash(mkfs.ext4:*)"
-                        "Bash( /dev/sda)"
-                        "Bash(> /dev/sda)"
-                        "Read(./.dev.vars)"
-                        "Read(./.dev.vars.iron)"
-
-                        # Block secrets in .env* files from being read
-                        # If you need env that is public to be read, then use .public.env
-                        # Claude docs: "Bare filenames follow gitignore semantics and match at any depth, so Read(.env) and Read(**/.env) are equivalent"
-                        "Read(.env)"
-                        "Read(.env.*)"
-                        "Read(//**/.env)" # blocks .env file reading from other project dirs
-                        # Also block bash-based reads of .env* files
-                        "Bash(cat .env*)"
-                        "Bash(cat **/.env*)"
-                        "Bash(head .env*)"
-                        "Bash(tail .env*)"
-                        "Bash(less .env*)"
-                        "Bash(more .env*)"
-                        "Bash(* .env *)" # should block any command referencing .env
-                        "Bash(* .env.* *)" # should block any command referencing .env.whatever
-                      ];
-                      description = "Tool permissions to always deny. Use lib.mkAfter [...] to append to defaults.";
+                      default = [];
+                      description = "Tool permissions to always deny. nix-pai sets base rules via lib.mkBefore; use lib.mkAfter [...] to append, lib.mkForce [...] to replace.";
                     };
                   };
                 };

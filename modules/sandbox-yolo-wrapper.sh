@@ -100,6 +100,102 @@ mkdir -p "$SANDBOX_HOME/.claude"
 # Get real home directory
 REAL_HOME="${HOME:-$(eval echo ~)}"
 
+###########################################
+# User-configured sandbox paths and env (pai.sandboxYolo.* options)
+###########################################
+# Defines PAI_SANDBOX_{RW,RO,DENY,COPY}_PATHS and PAI_SANDBOX_ENV_{NAMES,CMDS}.
+# Arrays may be empty; expand with ${a[@]+"${a[@]}"} so bash 3.2 + set -u copes.
+source "@paiBasePath@/claude/sandbox/config.sh"
+
+# ~ or ~/x -> real home path; anything else unchanged
+expand_path() {
+    case "$1" in
+        "~") printf '%s\n' "$REAL_HOME" ;;
+        "~/"*) printf '%s\n' "$REAL_HOME/${1:2}" ;;
+        *) printf '%s\n' "$1" ;;
+    esac
+}
+
+# Follow symlinks on the final component until a non-link remains
+follow_links() {
+    local p="$1" t
+    while [[ -L "$p" ]]; do
+        t="$(readlink "$p")"
+        case "$t" in
+            /*) p="$t" ;;
+            *) p="$(dirname "$p")/$t" ;;
+        esac
+    done
+    printf '%s\n' "$p"
+}
+
+# Resolve directory symlinks (/tmp -> /private/tmp); missing paths unchanged
+resolve_path() {
+    local p="$1"
+    if [[ -d "$p" ]]; then
+        (cd "$p" && pwd -P)
+    elif [[ -d "$(dirname "$p")" ]]; then
+        printf '%s/%s\n' "$(cd "$(dirname "$p")" && pwd -P)" "$(basename "$p")"
+    else
+        printf '%s\n' "$p"
+    fi
+}
+
+# Path relative to the real home, or failure if not under it (or escapes via ..)
+home_rel() {
+    case "$1" in
+        *"/.."*) return 1 ;;
+        "$REAL_HOME"/?*) printf '%s\n' "${1#"$REAL_HOME"/}" ;;
+        *) return 1 ;;
+    esac
+}
+
+# True if $1 is $2 or lies beneath it
+is_under() {
+    [[ "$1" == "$2" || "$1" == "$2"/* ]]
+}
+
+# Copy selected files/dirs from the real home into the sandbox home. Runs
+# after the git/direnv copies (so user entries override them) and before the
+# .claude copy and Keychain step (so Claude auth can't be clobbered).
+copy_from_home() {
+    local entry src rel dest
+    for entry in ${PAI_SANDBOX_COPY_PATHS[@]+"${PAI_SANDBOX_COPY_PATHS[@]}"}; do
+        src="$(expand_path "$entry")"
+        if ! rel="$(home_rel "$src")"; then
+            echo "Warning: sandbox copyFromHome: $entry is not under home, skipping" >&2
+            continue
+        fi
+        if [[ ! -e "$src" ]]; then
+            echo "Warning: sandbox copyFromHome: $entry not found, skipping" >&2
+            continue
+        fi
+        dest="$SANDBOX_HOME/$rel"
+        mkdir -p "$(dirname "$dest")"
+        rm -rf "$dest"
+        cp -RL "$src" "$dest" || echo "Warning: sandbox copyFromHome: failed to copy $entry" >&2
+    done
+}
+
+# Run envFromCommands outside the sandbox; collect successful results
+EXTRA_ENV_NAMES=()
+EXTRA_ENV_VALUES=()
+collect_env_from_commands() {
+    local i=0 name cmd value
+    while [[ $i -lt ${#PAI_SANDBOX_ENV_NAMES[@]} ]]; do
+        name="${PAI_SANDBOX_ENV_NAMES[$i]}"
+        cmd="${PAI_SANDBOX_ENV_CMDS[$i]}"
+        i=$((i + 1))
+        if value="$(bash -c "$cmd")" && [[ -n "$value" ]]; then
+            EXTRA_ENV_NAMES+=("$name")
+            EXTRA_ENV_VALUES+=("$value")
+        else
+            echo "Warning: sandbox envFromCommands: '$cmd' failed or was empty, $name not set" >&2
+        fi
+    done
+}
+collect_env_from_commands
+
 # Copy .claude.json for config/preferences (not auth)
 if [ -f "$REAL_HOME/.claude.json" ]; then
     cp "$REAL_HOME/.claude.json" "$SANDBOX_HOME/.claude.json"
@@ -114,6 +210,8 @@ if [ -d "$REAL_HOME/.config/direnv/lib" ]; then
   mkdir -p "$SANDBOX_HOME/.config/direnv/"
   cp -R "$REAL_HOME/.config/direnv/lib" "$SANDBOX_HOME/.config/direnv/"
 fi
+
+copy_from_home
 
 # Copy .claude directory contents (settings, history, and on Linux the
 # .credentials.json OAuth file). The trailing /. form copies hidden files
@@ -163,6 +261,34 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
 
     # Resolve parent directory path for monorepo support
     RESOLVED_PARENT="$(cd "$(dirname "$PROJECT_DIR")" && pwd -P)"
+
+    # User-configured rules, appended last: allows first, then denies, since
+    # seatbelt applies the last matching rule. Each path is emitted both
+    # dir-resolved and fully resolved (home-manager files symlink into /nix).
+    ADDITIONAL_SANDBOX_RULES=""
+    sb_escape() {
+        local s="${1//\\/\\\\}"
+        printf '%s' "${s//\"/\\\"}"
+    }
+    add_sb_rule() {
+        local expanded resolved full
+        expanded="$(expand_path "$2")"
+        resolved="$(resolve_path "$expanded")"
+        full="$(resolve_path "$(follow_links "$expanded")")"
+        ADDITIONAL_SANDBOX_RULES+="($1 (subpath \"$(sb_escape "$resolved")\"))"$'\n'
+        if [[ "$full" != "$resolved" ]]; then
+            ADDITIONAL_SANDBOX_RULES+="($1 (subpath \"$(sb_escape "$full")\"))"$'\n'
+        fi
+    }
+    for p in ${PAI_SANDBOX_RW_PATHS[@]+"${PAI_SANDBOX_RW_PATHS[@]}"}; do
+        add_sb_rule "allow file-read* file-write*" "$p"
+    done
+    for p in ${PAI_SANDBOX_RO_PATHS[@]+"${PAI_SANDBOX_RO_PATHS[@]}"}; do
+        add_sb_rule "allow file-read*" "$p"
+    done
+    for p in ${PAI_SANDBOX_DENY_PATHS[@]+"${PAI_SANDBOX_DENY_PATHS[@]}"}; do
+        add_sb_rule "deny file-read* file-write*" "$p"
+    done
 
     # Build complete sandbox profile: base + dynamic rules
     SANDBOX_PROFILE="$(cat @paiBasePath@/claude/sandbox/macos.sbpl)
@@ -255,7 +381,9 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
 (allow network-outbound)
 (allow network-inbound)
 (allow system-socket)
-"
+
+; === User-configured paths (allow, then deny - last match wins) ===
+$ADDITIONAL_SANDBOX_RULES"
 
     # Debug aid: print the exact profile this wrapper would apply, then exit.
     # Lets sandbox problems be reproduced against the real profile instead of a
@@ -265,6 +393,19 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
         printf '%s\n' "$SANDBOX_PROFILE"
         exit 0
     fi
+
+    # HOME points at the sandbox home, so expose allowed paths under the real
+    # home at the same relative spot (Linux gets this from its bind mounts).
+    # Existing entries (e.g. copyFromHome results) win.
+    for p in ${PAI_SANDBOX_RW_PATHS[@]+"${PAI_SANDBOX_RW_PATHS[@]}"} ${PAI_SANDBOX_RO_PATHS[@]+"${PAI_SANDBOX_RO_PATHS[@]}"}; do
+        src="$(expand_path "$p")"
+        rel="$(home_rel "$src")" || continue
+        [[ -e "$src" ]] || continue
+        dest="$SANDBOX_HOME/$rel"
+        [[ -e "$dest" || -L "$dest" ]] && continue
+        mkdir -p "$(dirname "$dest")"
+        ln -s "$src" "$dest"
+    done
 
     # Build env command with optional private mode variables
     ENV_CMD=(env
@@ -286,6 +427,12 @@ if [[ "$PLATFORM" == "Darwin" ]]; then
             DISABLE_PROMPT_CACHING="$DISABLE_PROMPT_CACHING"
         )
     fi
+
+    i=0
+    while [[ $i -lt ${#EXTRA_ENV_NAMES[@]} ]]; do
+        ENV_CMD+=("${EXTRA_ENV_NAMES[$i]}=${EXTRA_ENV_VALUES[$i]}")
+        i=$((i + 1))
+    done
 
     /usr/bin/sandbox-exec \
         -p "$SANDBOX_PROFILE" \
@@ -329,6 +476,39 @@ else
         BWRAP_ARGS+=(--ro-bind "$RESOLV_CONF" "$RESOLV_CONF")
     fi
 
+    # User-configured paths. Bound after the home bind so paths under ~ show up
+    # at their real location, which is also $HOME/<rel> inside the sandbox.
+    # -try variants skip missing sources instead of aborting.
+    BOUND_PATHS=("$PROJECT_DIR" "$PROJECT_PARENT")
+    for p in ${PAI_SANDBOX_RW_PATHS[@]+"${PAI_SANDBOX_RW_PATHS[@]}"}; do
+        src="$(expand_path "$p")"
+        BWRAP_ARGS+=(--bind-try "$src" "$src")
+        BOUND_PATHS+=("$src")
+    done
+    for p in ${PAI_SANDBOX_RO_PATHS[@]+"${PAI_SANDBOX_RO_PATHS[@]}"}; do
+        src="$(expand_path "$p")"
+        BWRAP_ARGS+=(--ro-bind-try "$src" "$src")
+        BOUND_PATHS+=("$src")
+    done
+
+    # Denies: mounted after all binds so they shadow them. Only needed for
+    # paths under something bound; everything else is already invisible, and
+    # mounting over it would litter the sandbox home with empty mountpoints.
+    for p in ${PAI_SANDBOX_DENY_PATHS[@]+"${PAI_SANDBOX_DENY_PATHS[@]}"}; do
+        src="$(expand_path "$p")"
+        [[ -e "$src" ]] || continue
+        for b in "${BOUND_PATHS[@]}"; do
+            if is_under "$src" "$b"; then
+                if [[ -d "$src" ]]; then
+                    BWRAP_ARGS+=(--tmpfs "$src")
+                else
+                    BWRAP_ARGS+=(--ro-bind /dev/null "$src")
+                fi
+                break
+            fi
+        done
+    done
+
     # Add private mode env vars if enabled
     if [[ "$PRIVATE_MODE" == "true" ]]; then
         BWRAP_ARGS+=(
@@ -339,6 +519,19 @@ else
             --setenv DISABLE_PROMPT_CACHING "$DISABLE_PROMPT_CACHING"
         )
     fi
+
+    # Debug aid (same as macOS): print the bwrap arguments, one per line, then exit.
+    if [[ -n "${PAI_SANDBOX_DUMP_PROFILE:-}" ]]; then
+        printf '%s\n' "${BWRAP_ARGS[@]}"
+        exit 0
+    fi
+
+    # envFromCommands values added after the dump so tokens aren't printed
+    i=0
+    while [[ $i -lt ${#EXTRA_ENV_NAMES[@]} ]]; do
+        BWRAP_ARGS+=(--setenv "${EXTRA_ENV_NAMES[$i]}" "${EXTRA_ENV_VALUES[$i]}")
+        i=$((i + 1))
+    done
 
     bwrap "${BWRAP_ARGS[@]}" -- "$CLAUDE_CMD" $CLAUDE_ARGS "$@"
 fi

@@ -254,6 +254,18 @@ OpenCode is configured via `opencodeSettings` for local Ollama-based AI. The `$s
       # patternsSource = ./my-patterns;  # Custom patterns directory
     };
 
+    # Sandbox for ${commandName}-sandbox-yolo (seatbelt on macOS, bubblewrap on Linux).
+    # The sandbox gets a throwaway $HOME; only the project (rw) and its parent (ro) are visible.
+    sandboxYolo = {
+      additionalReadOnlyPaths = [ "~/Notes" ];
+      additionalReadWritePaths = [ "~/.cargo" ];
+      denyPaths = lib.mkAfter [ "~/.netrc" ];  # appends to ~/.ssh ~/.gnupg ~/.aws ~/.kube ~/.config/gcloud
+      copyFromHome = [ "~/.config/gh" ];       # copied in at launch, discarded on exit
+      # Run outside the sandbox, result set as env inside. gh keeps its token in the
+      # macOS Keychain, which the sandbox can't read, so pass it in explicitly.
+      envFromCommands.GH_TOKEN = "gh auth token";
+    };
+
     # Add packages to the environment
     extraPackages = [ pkgs.ripgrep pkgs.fd ];
 

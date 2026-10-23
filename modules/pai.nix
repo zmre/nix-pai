@@ -108,6 +108,24 @@ in {
       );
       sandboxSettingsJsonFile = pkgs.writeText "sandbox-settings.json" sandboxSettingsJsonContent;
 
+      # Sandbox path/env lists, sourced by the sandbox wrapper. Paths are left
+      # raw (~ stays literal) because expansion and symlink resolution must
+      # happen at launch time on the user's machine.
+      sandboxCfg = perSystemConfig.pai.sandboxYolo;
+      sandboxEnvNames = builtins.attrNames sandboxCfg.envFromCommands;
+      shellArray = name: values: "${name}=(${lib.concatMapStringsSep " " lib.escapeShellArg values})";
+      sandboxConfigFile =
+        lib.throwIfNot (lib.all (n: builtins.match "[A-Za-z_][A-Za-z0-9_]*" n != null) sandboxEnvNames)
+        "pai.sandboxYolo.envFromCommands: names must be valid shell variable names, got: ${toString sandboxEnvNames}"
+        (pkgs.writeText "sandbox-config.sh" ''
+          ${shellArray "PAI_SANDBOX_RW_PATHS" sandboxCfg.additionalReadWritePaths}
+          ${shellArray "PAI_SANDBOX_RO_PATHS" sandboxCfg.additionalReadOnlyPaths}
+          ${shellArray "PAI_SANDBOX_DENY_PATHS" sandboxCfg.denyPaths}
+          ${shellArray "PAI_SANDBOX_COPY_PATHS" sandboxCfg.copyFromHome}
+          ${shellArray "PAI_SANDBOX_ENV_NAMES" sandboxEnvNames}
+          ${shellArray "PAI_SANDBOX_ENV_CMDS" (map (n: sandboxCfg.envFromCommands.${n}) sandboxEnvNames)}
+        '');
+
       # Import fabric module with necessary dependencies
       # Use fixedPkgs so yt-dlp's jeepney dependency builds on macOS
       fabricWrapped = import ./fabric.nix {
@@ -330,6 +348,9 @@ in {
             # Copy Seatbelt profile for macOS
             cp "${localsrc}/modules/sandbox/macos.sbpl" $out/claude/sandbox/
             chmod u+w $out/claude/sandbox/macos.sbpl
+
+            # User-configured paths/env for the sandbox (sourced by wrapper)
+            cp ${sandboxConfigFile} $out/claude/sandbox/config.sh
 
             # Copy sandbox wrapper script
             cp "${localsrc}/modules/sandbox-yolo-wrapper.sh" $out/bin/${perSystemConfig.pai.commandName}-sandbox-yolo
@@ -698,6 +719,180 @@ in {
             };
         };
       };
+
+      # Base Claude permission rules via lib.mkBefore so consumers' lib.mkAfter
+      # appends to them and lib.mkForce replaces them (an option default would
+      # be dropped by any definition, mkAfter included).
+      pai.claudeSettings.permissions = {
+        allow = lib.mkBefore [
+          # this will result in a path like "//nix/store/wkcx98..." -- that double slash is necessary for
+          # an absolute filesystem path instead of a project relative one
+          # Read(path) rules cover all file-reading tools (Read/Glob/Grep)
+          "Read(/@paiBasePath@**)"
+          "Skill(*)" # not sure which should work
+          "Skill(:*)"
+          "Skill(claude:*)"
+
+          # Common utilities
+          "Bash(find:*)"           # File searching (potentially dangerous)
+          "Bash(ls:*)"
+          "Bash(tree:*)"
+          "Bash(wc:*)"
+          "Bash(head:*)"
+          "Bash(tail:*)"
+          "Bash(diff:*)"
+          "Bash(sort:*)"
+          "Bash(uniq:*)"
+          "Bash(cat:*)"
+          "Bash(grep:*)"
+          "Bash(jq:*)"
+
+          # Common build commands
+          "Bash(configure:*)"
+          "Bash(make:*)"
+          "Bash(just:*)"
+
+          # Node.js ecosystem
+          "Bash(npm *)"
+          "Bash(pnpm *)"
+          "Bash(npx *)"
+          "Bash(yarn *)"
+          "Bash(yarn lint *)"
+          "Bash(node *)"
+          "Bash(node --check *)"
+          "Bash(bun *)"
+          "Bash(tsc *)"
+
+          # Scala
+          "Bash(sbt:*)"
+          "Bash(scala:*)"
+          "Bash(scalac:*)"
+
+          # Swift
+          "Bash(xcodebuild:*)"
+          "Bash(xcodegen generate:*)"
+          "Bash(log show:*)"
+          "Bash(log stream:*)"
+          "Bash(swift:*)"
+          "Bash(swiftc:*)"
+          "Bash(swiftformat:*)"
+          "Bash(swift-format:*)"
+          "Bash(swiftlint:*)"
+          "Bash(plutil:*)"
+          "Bash(mdls:*)"
+
+          # Git expansion
+          "Bash(git status:*)"
+          "Bash(git diff:*)"
+          "Bash(git log:*)"
+          "Bash(git branch:*)"
+          "Bash(git checkout:*)"
+          "Bash(git stash:*)"
+          "Bash(git show:*)"
+          "Bash(git fetch:*)"
+
+          # Nix
+          "Bash(nix:*)"            # All nix commands
+
+          # Python
+          "Bash(pip:*)"
+          "Bash(uv:*)"
+
+          # Rust
+          "Bash(cargo:*)"
+          "Bash(rustc:*)"
+          "Bash(/target/release/:*)"
+          "Bash(/target/debug/:*)"
+
+          # Misc utilities
+          "Bash(which:*)"          # Command location
+          "Bash(type:*)"           # Command type
+          "Bash(file:*)"           # File type detection
+          "Bash(stat:*)"           # File statistics
+          "Bash(realpath:*)"       # Path resolution
+          "Bash(dirname:*)"        # Directory extraction
+          "Bash(basename:*)"       # Basename extraction
+          "Bash(readlink:*)"
+          "Bash(rg:*)"
+          "Bash(magick:*)"
+          "Bash(vm_stat:*)"
+          "Bash(wc:*)"
+
+          # Other AI tools
+          "Bash(fabric:*)"
+          "Bash(gemini:*)"
+          "Bash(codex:*)"
+          "Bash(gsd-sdk *)"
+          "Bash(gsd-tools *)"
+          # Edit(path) rules cover all file-editing tools (Edit/Write/NotebookEdit)
+          "Edit(.planning/**)"
+
+          # Web
+          "WebSearch"
+          "WebFetch"
+
+          # Misc
+          "Read(/**)"
+          "Read(/tmp/**)"
+          "Bash(cat @paiBasePath@:*)"
+          "Read(/@paiBasePath@/claude/**)"
+          "Edit(./**)"
+          "Edit(//tmp/**)"
+        ];
+        ask = lib.mkBefore [
+          "Bash(sudo:*)"
+          "Bash(git push:*)"
+          "Bash(curl:*)"
+          "Bash(wget:*)"
+          "Bash(rm:*)"
+          "Bash(git rm:*)"
+        ];
+        deny = lib.mkBefore [
+          "Bash(aws:*)"
+          "Bash(gcp:*)"
+          "Bash(gcloud:*)"
+          "Bash(kubectl:*)"
+          "Bash(vault:*)"
+          "Bash(ironhide:*)"
+          "Bash(diskutil:*)"
+          "Bash(rm -rf /)"
+          "Bash(rm -rf /*)"
+          "Bash(rm -rf ~)"
+          "Bash(rm -rf $HOME)"
+          "Bash(rm -rf $PAI_HOME)"
+          "Bash(rm -rf $PAI_DIR)"
+          "Bash(sudo rm -rf /)"
+          "Bash(sudo rm -rf /*)"
+          "Bash(fork bomb)"
+          "Bash(dd :*)"
+          "Bash(dd if=/dev/zero of=/dev/sda)"
+          "Bash(mkfs.ext4:*)"
+          "Bash( /dev/sda)"
+          "Bash(> /dev/sda)"
+          "Read(./.dev.vars)"
+          "Read(./.dev.vars.iron)"
+
+          # Block secrets in .env* files from being read
+          # If you need env that is public to be read, then use .public.env
+          # Claude docs: "Bare filenames follow gitignore semantics and match at any depth, so Read(.env) and Read(**/.env) are equivalent"
+          "Read(.env)"
+          "Read(.env.*)"
+          "Read(//**/.env)" # blocks .env file reading from other project dirs
+          # Also block bash-based reads of .env* files
+          "Bash(cat .env*)"
+          "Bash(cat **/.env*)"
+          "Bash(head .env*)"
+          "Bash(tail .env*)"
+          "Bash(less .env*)"
+          "Bash(more .env*)"
+          "Bash(* .env *)" # should block any command referencing .env
+          "Bash(* .env.* *)" # should block any command referencing .env.whatever
+        ];
+      };
+
+      # Base sandbox deny list via lib.mkBefore so consumers can lib.mkAfter
+      # to append (an option default would be dropped by any definition).
+      pai.sandboxYolo.denyPaths = lib.mkBefore ["~/.ssh" "~/.gnupg" "~/.aws" "~/.kube" "~/.config/gcloud"];
 
       # Set base hook configurations via lib.mkBefore (enables lib.mkAfter merging)
       # Users can use lib.mkAfter to append their hooks after these base hooks

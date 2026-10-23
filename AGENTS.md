@@ -148,6 +148,14 @@ Claude-specific settings (`pai.claudeSettings.*`):
 - `hooks` - Event hooks configuration
 - `statusLine` - Status line configuration
 
+Sandbox settings (`pai.sandboxYolo.*`, for the `<commandName>-sandbox-yolo` wrapper):
+- `enable` - Build the sandbox wrapper (seatbelt on macOS, bubblewrap on Linux)
+- `additionalReadWritePaths` / `additionalReadOnlyPaths` - Extra host paths (absolute or `~/`) exposed in the sandbox; paths under `~` also appear in the sandbox's temp `$HOME`
+- `denyPaths` - Host paths denied even under allowed paths. Base defaults are set via `lib.mkBefore`: append with `lib.mkAfter`, replace with `lib.mkForce`
+- `copyFromHome` - `~/` files/dirs copied into the sandbox's temp home at launch (discarded on exit)
+- `envFromCommands` - `{ VAR = "command"; }` run outside the sandbox, output set as env inside (e.g. `GH_TOKEN = "gh auth token"`)
+- Wrapper reads these from `$out/claude/sandbox/config.sh`. Use `PAI_SANDBOX_DUMP_PROFILE=1` to print the generated seatbelt profile or bwrap args
+
 MCP server configuration (`pai.mcpServers`):
 - Attribute set of MCP server configurations
 - Each server can have: type, url, command, args, headers, env
