@@ -146,6 +146,9 @@ in {
           }
         else null;
 
+      # The fabric skill is useless with neither the CLI nor bundled patterns
+      fabricSkillEnabled = perSystemConfig.pai.fabric.enable || perSystemConfig.pai.fabric.includePatterns;
+
       # hiddenPackages are made available only to the ai assistant and not generally
       hiddenPackages = with pkgs;
         [
@@ -364,11 +367,12 @@ in {
           ###########################################
           # SECTION 5: Copy config files and directories
           ###########################################
-          # Copy in all the settings files, excluding fabric patterns (handled separately)
+          # Copy in all the settings files, excluding fabric patterns (handled separately),
+          # the fabric skill entirely when fabric is fully disabled,
           # and settings.json/mcp.json (generated from Nix options)
           # Use --chmod=u+w to ensure all files are writable (nix store sources are read-only)
           mkdir -p $out/claude
-          rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' --exclude='settings.json' --exclude='mcp.json' "${localsrc}/claude/" "$out/claude/"
+          rsync -a --chmod=u+w --exclude='skills/fabric/tools/patterns' ${lib.optionalString (!fabricSkillEnabled) "--exclude='skills/fabric'"} --exclude='settings.json' --exclude='mcp.json' "${localsrc}/claude/" "$out/claude/"
 
           # Ensure the fleet tracking hook is executable regardless of the
           # committed file mode (it is invoked directly as a hook command).
@@ -390,8 +394,8 @@ in {
             cp ${fabricPatterns}/patterns-list.txt $out/claude/skills/fabric/.patterns-list.txt
           ''}
 
-          # If patterns not included, create placeholder patterns list
-          ${lib.optionalString (!perSystemConfig.pai.fabric.includePatterns) ''
+          # If patterns not included but the CLI is, create placeholder patterns list
+          ${lib.optionalString (perSystemConfig.pai.fabric.enable && !perSystemConfig.pai.fabric.includePatterns) ''
             mkdir -p $out/claude/skills/fabric
             echo "Patterns not bundled. Use \`fabric -l\` to list available patterns, or \`fabric -p pattern_name\` to execute." > $out/claude/skills/fabric/.patterns-list.txt
           ''}
