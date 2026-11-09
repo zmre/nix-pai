@@ -738,7 +738,7 @@ in {
           "Skill(claude:*)"
 
           # Common utilities
-          "Bash(find:*)"           # File searching (potentially dangerous)
+          "Bash(find:*)" # File searching (potentially dangerous)
           "Bash(ls:*)"
           "Bash(tree:*)"
           "Bash(wc:*)"
@@ -796,7 +796,7 @@ in {
           "Bash(git fetch:*)"
 
           # Nix
-          "Bash(nix:*)"            # All nix commands
+          "Bash(nix:*)" # All nix commands
 
           # Python
           "Bash(pip:*)"
@@ -809,13 +809,13 @@ in {
           "Bash(/target/debug/:*)"
 
           # Misc utilities
-          "Bash(which:*)"          # Command location
-          "Bash(type:*)"           # Command type
-          "Bash(file:*)"           # File type detection
-          "Bash(stat:*)"           # File statistics
-          "Bash(realpath:*)"       # Path resolution
-          "Bash(dirname:*)"        # Directory extraction
-          "Bash(basename:*)"       # Basename extraction
+          "Bash(which:*)" # Command location
+          "Bash(type:*)" # Command type
+          "Bash(file:*)" # File type detection
+          "Bash(stat:*)" # File statistics
+          "Bash(realpath:*)" # Path resolution
+          "Bash(dirname:*)" # Directory extraction
+          "Bash(basename:*)" # Basename extraction
           "Bash(readlink:*)"
           "Bash(rg:*)"
           "Bash(magick:*)"
@@ -846,10 +846,6 @@ in {
         ask = lib.mkBefore [
           "Bash(sudo:*)"
           "Bash(git push:*)"
-          "Bash(curl:*)"
-          "Bash(wget:*)"
-          "Bash(rm:*)"
-          "Bash(git rm:*)"
         ];
         deny = lib.mkBefore [
           "Bash(aws:*)"
