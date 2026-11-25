@@ -317,7 +317,7 @@
                       default = "🤖 Generated with @assistantName@";
                       description = "Attribution for pull request descriptions. Empty string hides pull request attribution";
                     };
-                    sessionurl = lib.mkOption {
+                    sessionUrl = lib.mkOption {
                       type = lib.types.bool;
                       default = false;
                       description = "Link to cloud sessions URL, if applicable";
