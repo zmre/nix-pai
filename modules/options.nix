@@ -299,7 +299,11 @@
                 description = "https://code.claude.com/docs/en/output-styles";
               };
               attribution = lib.mkOption {
-                default = {};
+                default = {
+                  commit = "";
+                  pr = "";
+                  sessionUrl = false;
+                };
                 description = "Attribution settings for git/github actions";
                 type = lib.types.submodule {
                   options = {
@@ -312,6 +316,11 @@
                       type = lib.types.str;
                       default = "🤖 Generated with @assistantName@";
                       description = "Attribution for pull request descriptions. Empty string hides pull request attribution";
+                    };
+                    sessionurl = lib.mkOption {
+                      type = lib.types.bool;
+                      default = false;
+                      description = "Link to cloud sessions URL, if applicable";
                     };
                   };
                 };
